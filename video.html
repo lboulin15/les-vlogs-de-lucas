@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vlog — Les Vlogs de Lucas</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- LOADING -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-logo">LUCAS</div>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar" style="display:none">
+    <div class="navbar-brand">LES VLOGS <span>DE LUCAS</span></div>
+    <div class="navbar-right">
+      <span class="navbar-user" id="navUserEmail"></span>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Déconnexion</button>
+    </div>
+  </nav>
+
+  <!-- VIDEO PAGE -->
+  <main class="video-page" id="videoPage" style="display:none">
+    <div class="video-container">
+
+      <!-- BACK -->
+      <button class="back-btn" id="backBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Retour
+      </button>
+
+      <!-- PLAYER -->
+      <div class="video-player-wrap" id="playerWrap">
+        <!-- iframe injectée par JS -->
+      </div>
+
+      <h1 class="video-title-page" id="videoTitle"></h1>
+      <p class="video-date" id="videoDate"></p>
+
+      <!-- COMMENTS -->
+      <div class="comments-section">
+        <h2 class="comments-title">💬 Commentaires</h2>
+
+        <div class="comment-form">
+          <textarea
+            class="form-input"
+            id="commentInput"
+            placeholder="Laissez un commentaire..."
+            rows="3"
+          ></textarea>
+          <div style="display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" id="commentSubmit">
+              Publier
+            </button>
+          </div>
+        </div>
+
+        <div class="comment-list" id="commentList"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="video.js"></script>
+</body>
+</html>

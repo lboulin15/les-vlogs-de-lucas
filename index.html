@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Les Vlogs de Lucas — Connexion</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">LES VLOGS<br><span>DE LUCAS</span></div>
+      <p class="login-subtitle">Plateforme privée — Connexion requise</p>
+
+      <form class="login-form" id="loginForm" autocomplete="off">
+        <div class="form-group">
+          <label class="form-label" for="email">Adresse email</label>
+          <input
+            class="form-input"
+            type="email"
+            id="email"
+            placeholder="votre@email.com"
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Mot de passe</label>
+          <input
+            class="form-input"
+            type="password"
+            id="password"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="login-error" id="loginError"></div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginBtn">
+          Se connecter
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
