@@ -1,5 +1,5 @@
 // ============================================================
-// video.js — V2 Enhanced
+// video.js — V3 avec système de notation
 // ============================================================
 import { supabase } from './supabaseClient.js';
 
@@ -9,7 +9,6 @@ function navigateTo(url) {
   setTimeout(() => { window.location.href = url; }, 280);
 }
 
-// Couleurs pour avatars
 const AVATAR_COLORS = [
   ['#e50914','#fff'], ['#f5a623','#000'], ['#3b82f6','#fff'],
   ['#10b981','#fff'], ['#8b5cf6','#fff'], ['#ec4899','#fff'],
@@ -21,28 +20,26 @@ function getAvatarColor(email) {
   for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
-
 function getInitials(email) {
-  const name = email.split('@')[0];
-  return name.substring(0, 2).toUpperCase();
+  return email.split('@')[0].substring(0, 2).toUpperCase();
 }
 
 (async () => {
-  const loadingScreen = document.getElementById('loadingScreen');
-  const navbar = document.getElementById('navbar');
-  const videoPage = document.getElementById('videoPage');
-  const navUserEmail = document.getElementById('navUserEmail');
-  const adminLink = document.getElementById('adminLink');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const backBtn = document.getElementById('backBtn');
-  const playerWrap = document.getElementById('playerWrap');
-  const videoTitleEl = document.getElementById('videoTitle');
-  const videoDateEl = document.getElementById('videoDate');
-  const commentInput = document.getElementById('commentInput');
-  const commentSubmit = document.getElementById('commentSubmit');
-  const commentList = document.getElementById('commentList');
+  const loadingScreen  = document.getElementById('loadingScreen');
+  const navbar         = document.getElementById('navbar');
+  const videoPage      = document.getElementById('videoPage');
+  const navUserEmail   = document.getElementById('navUserEmail');
+  const adminLink      = document.getElementById('adminLink');
+  const logoutBtn      = document.getElementById('logoutBtn');
+  const backBtn        = document.getElementById('backBtn');
+  const playerWrap     = document.getElementById('playerWrap');
+  const videoTitleEl   = document.getElementById('videoTitle');
+  const videoDateEl    = document.getElementById('videoDate');
+  const commentInput   = document.getElementById('commentInput');
+  const commentSubmit  = document.getElementById('commentSubmit');
+  const commentList    = document.getElementById('commentList');
   const suggestedSection = document.getElementById('suggestedSection');
-  const suggestedRow = document.getElementById('suggestedRow');
+  const suggestedRow     = document.getElementById('suggestedRow');
 
   // ---- Auth ----
   const { data: { session } } = await supabase.auth.getSession();
@@ -57,7 +54,7 @@ function getInitials(email) {
   if (isAdmin) adminLink.style.display = 'inline-flex';
 
   // ---- Video ID ----
-  const params = new URLSearchParams(window.location.search);
+  const params  = new URLSearchParams(window.location.search);
   const videoId = params.get('id');
   if (!videoId) { window.location.href = 'home.html'; return; }
 
@@ -70,7 +67,7 @@ function getInitials(email) {
   }
   if (!hasAccess) { navigateTo('home.html'); return; }
 
-  // ---- Charger la vidéo ----
+  // ---- Charger vidéo ----
   const { data: video } = await supabase
     .from('videos').select('id, title, youtube_id, created_at').eq('id', videoId).single();
   if (!video) { navigateTo('home.html'); return; }
@@ -87,33 +84,139 @@ function getInitials(email) {
     year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  // ---- Marquer progression localStorage (simulé à 100% à l'ouverture) ----
+  // ---- Progression localStorage ----
   const existingProgress = parseInt(localStorage.getItem(`progress_${videoId}`) || '0');
   if (existingProgress < 100) {
-    // On met 60% si première visite, 100% après
     localStorage.setItem(`progress_${videoId}`, existingProgress === 0 ? '60' : '100');
   }
 
-  // ---- UI ----
+  // ---- Nav events ----
   logoutBtn.addEventListener('click', async () => { await supabase.auth.signOut(); navigateTo('index.html'); });
   backBtn.addEventListener('click', () => navigateTo('home.html'));
   adminLink?.addEventListener('click', (e) => { e.preventDefault(); navigateTo('admin.html'); });
 
-  // ---- Vidéos suggérées ----
-  let allAccessVideos = [];
-  if (isAdmin) {
-    const { data } = await supabase.from('videos').select('id, title, youtube_id')
-      .neq('id', videoId).order('created_at', { ascending: false }).limit(6);
-    allAccessVideos = data || [];
-  } else {
-    const { data: uvData } = await supabase.from('user_videos').select('video_id').eq('user_id', user.id);
-    const ids = (uvData || []).map(uv => uv.video_id).filter(id => id !== videoId);
-    if (ids.length > 0) {
-      const { data } = await supabase.from('videos').select('id, title, youtube_id')
-        .in('id', ids).order('created_at', { ascending: false }).limit(6);
-      allAccessVideos = data || [];
+  // ============================================================
+  // SYSTÈME DE NOTATION
+  // ============================================================
+  const starRating    = document.getElementById('starRating');
+  const ratingAverage = document.getElementById('ratingAverage');
+  const stars         = starRating.querySelectorAll('.star');
+  let userRating = 0;
+
+  // Charger la note de l'utilisateur + moyenne
+  async function loadRatings() {
+    try {
+      // Note de l'utilisateur connecté
+      const { data: myRating } = await supabase
+        .from('ratings')
+        .select('rating')
+        .eq('video_id', videoId)
+        .eq('user_id', user.id)
+        .single();
+
+      // Toutes les notes pour la moyenne
+      const { data: allRatings } = await supabase
+        .from('ratings')
+        .select('rating')
+        .eq('video_id', videoId);
+
+      // Afficher la note de l'utilisateur
+      userRating = myRating?.rating || 0;
+      renderStars(userRating);
+
+      // Calculer et afficher la moyenne
+      if (allRatings && allRatings.length > 0) {
+        const sum = allRatings.reduce((acc, r) => acc + r.rating, 0);
+        const avg = (sum / allRatings.length).toFixed(1);
+        const count = allRatings.length;
+        ratingAverage.innerHTML = `
+          <span class="rating-avg-number">${avg}</span>
+          <span class="rating-avg-stars">${renderStarsText(parseFloat(avg))}</span>
+          <span class="rating-avg-count">${count} avis</span>
+        `;
+      } else {
+        ratingAverage.innerHTML = `<span class="rating-avg-empty">Aucune note pour l'instant</span>`;
+      }
+    } catch (e) {
+      // Table ratings peut ne pas exister encore
+      ratingAverage.innerHTML = `<span class="rating-avg-empty">Notes indisponibles</span>`;
     }
   }
+
+  function renderStars(value) {
+    stars.forEach(star => {
+      const v = parseInt(star.dataset.value);
+      star.classList.toggle('active', v <= value);
+    });
+  }
+
+  function renderStarsText(avg) {
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(avg)) html += '<span class="star-filled">★</span>';
+      else if (i - avg < 1 && i - avg > 0) html += '<span class="star-half">★</span>';
+      else html += '<span class="star-empty">★</span>';
+    }
+    return html;
+  }
+
+  // Hover sur les étoiles
+  stars.forEach(star => {
+    star.addEventListener('mouseenter', () => {
+      const v = parseInt(star.dataset.value);
+      renderStars(v);
+    });
+    star.addEventListener('mouseleave', () => {
+      renderStars(userRating);
+    });
+    star.addEventListener('click', async () => {
+      const newRating = parseInt(star.dataset.value);
+
+      // Si même note → retirer la note
+      const finalRating = newRating === userRating ? 0 : newRating;
+
+      try {
+        if (finalRating === 0) {
+          await supabase.from('ratings')
+            .delete()
+            .eq('video_id', videoId)
+            .eq('user_id', user.id);
+          showToast('Note supprimée.', 'success');
+        } else {
+          await supabase.from('ratings')
+            .upsert(
+              { user_id: user.id, video_id: videoId, rating: finalRating },
+              { onConflict: 'user_id,video_id' }
+            );
+          showToast(`${finalRating} étoile${finalRating > 1 ? 's' : ''} — Merci !`, 'success');
+        }
+        userRating = finalRating;
+        await loadRatings();
+      } catch (err) {
+        showToast('Erreur lors de la notation.', 'error');
+      }
+    });
+  });
+
+  await loadRatings();
+
+  // ---- Vidéos suggérées ----
+  let allAccessVideos = [];
+  try {
+    if (isAdmin) {
+      const { data } = await supabase.from('videos').select('id, title, youtube_id')
+        .neq('id', videoId).order('created_at', { ascending: false }).limit(6);
+      allAccessVideos = data || [];
+    } else {
+      const { data: uvData } = await supabase.from('user_videos').select('video_id').eq('user_id', user.id);
+      const ids = (uvData || []).map(uv => uv.video_id).filter(id => id !== videoId);
+      if (ids.length > 0) {
+        const { data } = await supabase.from('videos').select('id, title, youtube_id')
+          .in('id', ids).order('created_at', { ascending: false }).limit(6);
+        allAccessVideos = data || [];
+      }
+    }
+  } catch (e) { /* silencieux */ }
 
   if (allAccessVideos.length > 0) {
     suggestedSection.style.display = 'block';
@@ -122,7 +225,8 @@ function getInitials(email) {
       card.className = 'suggested-card';
       card.innerHTML = `
         <div class="suggested-thumb">
-          <img src="https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg" alt="${escapeHtml(v.title)}" loading="lazy" />
+          <img src="https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg"
+               alt="${escapeHtml(v.title)}" loading="lazy" />
         </div>
         <div class="suggested-info">
           <div class="suggested-card-title">${escapeHtml(v.title)}</div>
@@ -133,7 +237,7 @@ function getInitials(email) {
     });
   }
 
-  // ---- Afficher ----
+  // ---- Afficher la page ----
   loadingScreen.style.display = 'none';
   navbar.style.display = 'flex';
   videoPage.style.display = 'block';
@@ -149,7 +253,8 @@ function getInitials(email) {
 
     commentSubmit.disabled = true;
     commentSubmit.textContent = 'Publication...';
-    const { error } = await supabase.from('comments').insert({ video_id: videoId, user_id: user.id, content });
+    const { error } = await supabase.from('comments')
+      .insert({ video_id: videoId, user_id: user.id, content });
     commentSubmit.disabled = false;
     commentSubmit.textContent = 'Publier';
 
@@ -178,11 +283,11 @@ function getInitials(email) {
 
     commentList.innerHTML = '';
     comments.forEach(comment => {
-      const email = comment.profiles?.email || 'utilisateur@lucas.fr';
+      const email    = comment.profiles?.email || 'utilisateur@lucas.fr';
       const initials = getInitials(email);
       const [bg, fg] = getAvatarColor(email);
-      const author = email.split('@')[0];
-      const date = new Date(comment.created_at).toLocaleDateString('fr-FR', {
+      const author   = email.split('@')[0];
+      const date     = new Date(comment.created_at).toLocaleDateString('fr-FR', {
         day: 'numeric', month: 'short', year: 'numeric',
         hour: '2-digit', minute: '2-digit'
       });

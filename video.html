@@ -8,21 +8,17 @@
 </head>
 <body>
 
-  <!-- TRANSITION (utilisée par navigateTo dans video.js) -->
   <div class="page-transition" id="pageTransition"></div>
 
-  <!-- LOADING -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-logo">LUCAS</div>
     <div class="spinner"></div>
   </div>
 
-  <!-- NAV -->
   <nav class="navbar" id="navbar" style="display:none">
     <div class="navbar-brand">LES VLOGS <span>DE LUCAS</span></div>
     <div class="navbar-right">
       <span class="navbar-user" id="navUserEmail"></span>
-      <!-- adminLink : affiché par video.js si is_admin -->
       <a href="admin.html" class="btn btn-secondary btn-sm" id="adminLink" style="display:none">
         👑 Panel Admin
       </a>
@@ -30,11 +26,9 @@
     </div>
   </nav>
 
-  <!-- VIDEO PAGE -->
   <main class="video-page" id="videoPage" style="display:none">
     <div class="video-container">
 
-      <!-- BACK -->
       <button class="back-btn" id="backBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
@@ -42,13 +36,25 @@
         Retour
       </button>
 
-      <!-- PLAYER -->
       <div class="video-player-wrap" id="playerWrap"></div>
 
       <h1 class="video-title-page" id="videoTitle"></h1>
       <p class="video-date" id="videoDate"></p>
 
-      <!-- VIDÉOS SUGGÉRÉES (affichées par video.js si d'autres vidéos accessibles) -->
+      <!-- NOTE / RATING -->
+      <div class="rating-section" id="ratingSection">
+        <div class="rating-label">Votre note</div>
+        <div class="star-rating" id="starRating">
+          <button class="star" data-value="1" aria-label="1 étoile">★</button>
+          <button class="star" data-value="2" aria-label="2 étoiles">★</button>
+          <button class="star" data-value="3" aria-label="3 étoiles">★</button>
+          <button class="star" data-value="4" aria-label="4 étoiles">★</button>
+          <button class="star" data-value="5" aria-label="5 étoiles">★</button>
+        </div>
+        <div class="rating-average" id="ratingAverage"></div>
+      </div>
+
+      <!-- VIDÉOS SUGGÉRÉES -->
       <div class="suggested-section" id="suggestedSection" style="display:none">
         <h2 class="suggested-title">🎬 À regarder ensuite</h2>
         <div class="suggested-row" id="suggestedRow"></div>
@@ -58,12 +64,7 @@
       <div class="comments-section">
         <h2 class="comments-title">💬 Commentaires</h2>
         <div class="comment-form">
-          <textarea
-            class="form-input"
-            id="commentInput"
-            placeholder="Laissez un commentaire..."
-            rows="3"
-          ></textarea>
+          <textarea class="form-input" id="commentInput" placeholder="Laissez un commentaire..." rows="3"></textarea>
           <div style="display:flex; justify-content:flex-end;">
             <button class="btn btn-primary" id="commentSubmit">Publier</button>
           </div>
@@ -74,7 +75,6 @@
     </div>
   </main>
 
-  <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
   <script type="module" src="video.js"></script>
