@@ -4,10 +4,10 @@
 import { supabase } from './supabaseClient.js';
 
 (async () => {
-  // Si déjà connecté → rediriger
+  // Si déjà connecté → rediriger vers home
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
-    redirectAfterLogin(session.user);
+    window.location.href = 'home.html';
     return;
   }
 
@@ -35,41 +35,20 @@ import { supabase } from './supabaseClient.js';
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        if (error.message.includes('Invalid login')) {
-          showError('Email ou mot de passe incorrect.');
-        } else {
-          showError(error.message);
-        }
+        showError(error.message.includes('Invalid login') ? 'Email ou mot de passe incorrect.' : error.message);
         setLoading(false);
         return;
       }
 
       if (data.user) {
-        redirectAfterLogin(data.user);
+        // Tout le monde va sur home.html — l'admin y voit le bouton Panel Admin
+        window.location.href = 'home.html';
       }
     } catch (err) {
       showError('Une erreur est survenue. Réessayez.');
       setLoading(false);
     }
   });
-
-  async function redirectAfterLogin(user) {
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.is_admin) {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.href = 'home.html';
-      }
-    } catch {
-      window.location.href = 'home.html';
-    }
-  }
 
   function showError(msg) {
     loginError.textContent = msg;

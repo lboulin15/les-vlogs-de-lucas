@@ -8,6 +8,9 @@
 </head>
 <body>
 
+  <!-- TRANSITION (utilisée par navigateTo dans video.js) -->
+  <div class="page-transition" id="pageTransition"></div>
+
   <!-- LOADING -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-logo">LUCAS</div>
@@ -19,6 +22,10 @@
     <div class="navbar-brand">LES VLOGS <span>DE LUCAS</span></div>
     <div class="navbar-right">
       <span class="navbar-user" id="navUserEmail"></span>
+      <!-- adminLink : affiché par video.js si is_admin -->
+      <a href="admin.html" class="btn btn-secondary btn-sm" id="adminLink" style="display:none">
+        👑 Panel Admin
+      </a>
       <button class="btn btn-ghost btn-sm" id="logoutBtn">Déconnexion</button>
     </div>
   </nav>
@@ -36,17 +43,20 @@
       </button>
 
       <!-- PLAYER -->
-      <div class="video-player-wrap" id="playerWrap">
-        <!-- iframe injectée par JS -->
-      </div>
+      <div class="video-player-wrap" id="playerWrap"></div>
 
       <h1 class="video-title-page" id="videoTitle"></h1>
       <p class="video-date" id="videoDate"></p>
 
-      <!-- COMMENTS -->
+      <!-- VIDÉOS SUGGÉRÉES (affichées par video.js si d'autres vidéos accessibles) -->
+      <div class="suggested-section" id="suggestedSection" style="display:none">
+        <h2 class="suggested-title">🎬 À regarder ensuite</h2>
+        <div class="suggested-row" id="suggestedRow"></div>
+      </div>
+
+      <!-- COMMENTAIRES -->
       <div class="comments-section">
         <h2 class="comments-title">💬 Commentaires</h2>
-
         <div class="comment-form">
           <textarea
             class="form-input"
@@ -55,12 +65,9 @@
             rows="3"
           ></textarea>
           <div style="display:flex; justify-content:flex-end;">
-            <button class="btn btn-primary" id="commentSubmit">
-              Publier
-            </button>
+            <button class="btn btn-primary" id="commentSubmit">Publier</button>
           </div>
         </div>
-
         <div class="comment-list" id="commentList"></div>
       </div>
 

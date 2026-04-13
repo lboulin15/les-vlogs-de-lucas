@@ -8,6 +8,9 @@
 </head>
 <body>
 
+  <!-- TRANSITION (utilisée par navigateTo dans home.js) -->
+  <div class="page-transition" id="pageTransition"></div>
+
   <!-- LOADING -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-logo">LUCAS</div>
@@ -16,26 +19,38 @@
 
   <!-- NAV -->
   <nav class="navbar" id="navbar" style="display:none">
-    <div class="navbar-brand">LES VLOGS <span>DE LUCAS</span></div>
+    <div class="navbar-brand" id="navBrand">
+      <div class="navbar-pulse"></div>
+      LES VLOGS <span>&nbsp;DE LUCAS</span>
+    </div>
     <div class="navbar-right">
       <span class="navbar-user" id="navUserEmail"></span>
+      <a href="admin.html" class="btn btn-secondary btn-sm" id="adminLink" style="display:none">
+        👑 Panel Admin
+      </a>
       <button class="btn btn-ghost btn-sm" id="logoutBtn">Déconnexion</button>
     </div>
   </nav>
 
-  <!-- HOME -->
-  <main class="home-page" id="homePage" style="display:none">
-    <div class="home-hero">
-      <div class="home-greeting">Bienvenue</div>
-      <h1 class="home-title" id="heroTitle">Vos Vlogs</h1>
-      <p class="home-count" id="videoCount"></p>
+  <!-- HOME PAGE -->
+  <div class="home-page" id="homePage" style="display:none">
+
+    <!-- HERO -->
+    <div class="hero" id="hero">
+      <div class="hero-bg" id="heroBg"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content" id="heroContent"></div>
     </div>
 
+    <!-- GRILLE DES VLOGS -->
     <div class="home-content">
-      <h2 class="section-title">Mes vidéos</h2>
-      <div class="video-grid" id="videoGrid"></div>
+      <div class="video-sections" id="videoSections"></div>
     </div>
-  </main>
+
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
 
   <script type="module" src="home.js"></script>
 </body>
