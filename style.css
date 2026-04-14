@@ -593,3 +593,99 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   box-shadow: 0 0 24px var(--accent-glow);
   text-decoration: none;
 }
+
+/* ============================================================
+   SÉLECTEUR DE PLATEFORME (Admin)
+   ============================================================ */
+.platform-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  width: fit-content;
+}
+.platform-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  font-size: 0.875rem; font-weight: 600;
+  background: var(--bg-3); color: var(--text-muted);
+  border: none; cursor: pointer;
+  transition: var(--transition);
+}
+.platform-btn:first-child { border-right: 1px solid var(--border); }
+.platform-btn:hover { background: var(--bg-4); color: var(--text); }
+.platform-btn.active[data-platform="youtube"] {
+  background: #ff0000;
+  color: #fff;
+}
+.platform-btn.active[data-platform="vimeo"] {
+  background: #1ab7ea;
+  color: #fff;
+}
+
+/* Hint sous le champ */
+.form-hint {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* Prévisualisation miniature Vimeo */
+.thumb-preview-wrap {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.thumb-preview-wrap img {
+  width: 100px; height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--bg-4);
+}
+#vimeoThumbStatus {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* Badges plateforme dans la liste admin */
+.platform-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.platform-badge.youtube { background: rgba(255,0,0,0.15); color: #ff4444; border: 1px solid rgba(255,0,0,0.3); }
+.platform-badge.vimeo   { background: rgba(26,183,234,0.15); color: #1ab7ea; border: 1px solid rgba(26,183,234,0.3); }
+
+/* Placeholder miniature admin sans image */
+.admin-video-thumb-placeholder {
+  background: var(--bg-4);
+  border: 1px solid var(--border);
+}
+
+/* Badge Vimeo sur les cartes vidéo */
+.badge-vimeo {
+  position: absolute; top: 10px; right: 10px;
+  background: #1ab7ea; color: #fff;
+  font-size: 0.60rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 3px 7px; border-radius: 4px; z-index: 2;
+}
+
+/* Badge Vimeo dans les vidéos suggérées */
+.suggested-platform-badge {
+  position: absolute; top: 6px; right: 6px;
+  background: #1ab7ea; color: #fff;
+  font-size: 0.58rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  padding: 2px 6px; border-radius: 3px; z-index: 2;
+}
+
+/* Responsive platform toggle */
+@media (max-width: 480px) {
+  .platform-btn { padding: 8px 14px; font-size: 0.8rem; }
+}
