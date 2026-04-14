@@ -86,18 +86,22 @@ input, textarea { font-family: var(--font-body); }
 .form-input::placeholder { color: var(--text-dim); }
 textarea.form-input { resize: vertical; min-height: 80px; }
 
-/* ============================================================
-   LOGIN — DIAPORAMA
-   ============================================================ */
-.login-slideshow { position: fixed; inset: 0; z-index: 0; background: var(--bg); }
-.login-slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.2s ease; }
-.login-slide.active { opacity: 1; }
-.login-slideshow-overlay { position: fixed; inset: 0; z-index: 1; background: radial-gradient(ellipse at center, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.85) 100%); backdrop-filter: blur(3px); }
+
 
 /* ============================================================
    LOGIN PAGE
    ============================================================ */
-.login-page { position: relative; z-index: 2; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(229,9,20,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(229,9,20,0.05) 0%, transparent 50%),
+    var(--bg);
+  padding: 24px;
+}
 .login-card { width: 100%; max-width: 400px; background: rgba(16,16,16,0.92); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); padding: 48px 40px; box-shadow: 0 24px 80px rgba(0,0,0,0.9); animation: fadeUp 0.5s cubic-bezier(0.4,0,0.2,1); backdrop-filter: blur(12px); }
 .login-logo { font-family: var(--font-display); font-size: 2.2rem; letter-spacing: 3px; color: var(--accent); text-align: center; margin-bottom: 6px; text-shadow: 0 0 30px var(--accent-glow); line-height: 1.2; }
 .login-logo span { color: var(--text); }
@@ -113,6 +117,56 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 .password-toggle:hover { color: var(--text-muted); }
 .password-toggle:focus-visible { outline: 2px solid var(--accent); }
 .password-toggle svg { width: 20px; height: 20px; }
+
+
+/* ============================================================
+   HERO DIAPORAMA
+   ============================================================ */
+.hero-slideshow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(2px) brightness(0.35);
+  transform: scale(1.05);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.hero-slide.active { opacity: 1; }
+
+/* Points de navigation */
+.hero-dots {
+  position: absolute;
+  bottom: 24px;
+  right: 40px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.hero-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+.hero-dot.active {
+  background: var(--accent);
+  width: 24px;
+  border-radius: 4px;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.hero-dot:hover:not(.active) { background: rgba(255,255,255,0.6); }
 
 /* ============================================================
    HOME PAGE
@@ -381,4 +435,155 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   .hero-title { font-size: 1.5rem; }
   .video-row { grid-template-columns: 1fr; }
   .navbar-brand { font-size: 1rem; }
+}
+
+/* ============================================================
+   POPUP BIENVENUE
+   ============================================================ */
+.welcome-overlay {
+  position: fixed; inset: 0;
+  z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.welcome-overlay.open { opacity: 1; pointer-events: all; }
+.welcome-overlay.open .welcome-modal { transform: translateY(0) scale(1); opacity: 1; }
+.welcome-overlay.closing { opacity: 0; }
+.welcome-overlay.closing .welcome-modal { transform: translateY(20px) scale(0.97); opacity: 0; }
+
+.welcome-modal {
+  background: var(--bg-2);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-lg);
+  padding: 44px 40px 40px;
+  width: 100%; max-width: 460px;
+  text-align: center;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.95), 0 0 60px var(--accent-glow);
+  transform: translateY(30px) scale(0.95);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
+}
+
+.welcome-icon {
+  width: 64px; height: 64px;
+  background: rgba(229,9,20,0.12);
+  border: 1px solid rgba(229,9,20,0.3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--accent);
+  animation: welcome-pulse 2s ease infinite;
+}
+.welcome-icon svg { width: 28px; height: 28px; }
+
+@keyframes welcome-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50%       { box-shadow: 0 0 0 10px transparent; }
+}
+
+.welcome-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: #4ade80;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  padding: 4px 14px; border-radius: 50px;
+  margin-bottom: 20px;
+}
+
+.welcome-title {
+  font-family: var(--font-display);
+  font-size: 2rem; letter-spacing: 1px;
+  line-height: 1.15; margin-bottom: 20px;
+}
+.welcome-title span { color: var(--accent); }
+
+.welcome-message {
+  font-size: 0.92rem; line-height: 1.7;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+.welcome-message strong { color: var(--text); font-weight: 700; }
+
+.welcome-divider {
+  height: 1px; background: var(--border);
+  margin: 0 0 24px;
+}
+
+.welcome-features {
+  display: flex; justify-content: center; gap: 24px;
+  margin-bottom: 32px; flex-wrap: wrap;
+}
+.welcome-feature {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 0.78rem; color: var(--text-muted); font-weight: 500;
+}
+.welcome-feature-icon { font-size: 1.4rem; }
+
+.welcome-enter-btn {
+  font-size: 1rem; letter-spacing: 0.5px;
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+.welcome-enter-btn:hover { letter-spacing: 1px; }
+
+/* Responsive popup */
+@media (max-width: 480px) {
+  .welcome-modal { padding: 32px 24px 28px; }
+  .welcome-title { font-size: 1.6rem; }
+  .welcome-features { gap: 16px; }
+}
+
+/* Hero dots responsive */
+@media (max-width: 768px) {
+  .hero-dots { right: 20px; bottom: 16px; gap: 6px; }
+  .hero-dot { width: 6px; height: 6px; }
+  .hero-dot.active { width: 18px; }
+}
+
+/* ============================================================
+   PLAYER FALLBACK (vidéo non lisible sur mobile)
+   ============================================================ */
+.player-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  border-radius: var(--radius);
+}
+.player-fallback-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0.3;
+  border-radius: var(--radius);
+}
+.player-fallback-overlay {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+}
+.player-fallback-icon { font-size: 2.5rem; }
+.player-fallback-msg {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.75);
+  max-width: 300px;
+  line-height: 1.5;
+}
+.player-fallback-btn {
+  box-shadow: 0 0 24px var(--accent-glow);
+  text-decoration: none;
 }

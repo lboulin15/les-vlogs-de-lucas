@@ -8,16 +8,13 @@
 </head>
 <body>
 
-  <!-- TRANSITION -->
   <div class="page-transition" id="pageTransition"></div>
 
-  <!-- LOADING -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-logo">LUCAS</div>
     <div class="spinner"></div>
   </div>
 
-  <!-- NAV -->
   <nav class="navbar" id="navbar" style="display:none">
     <div class="navbar-brand" id="navBrand">
       <div class="navbar-pulse"></div>
@@ -32,14 +29,23 @@
     </div>
   </nav>
 
-  <!-- HOME PAGE -->
   <div class="home-page" id="homePage" style="display:none">
 
-    <!-- HERO — classe "home-hero-cinematic" attendue par le CSS -->
+    <!-- HERO avec diaporama -->
     <div class="home-hero-cinematic" id="hero">
-      <div class="hero-bg" id="heroBg"></div>
+
+      <!-- Les slides du diaporama (remplies par home.js) -->
+      <div class="hero-slideshow" id="heroSlideshow"></div>
+
+      <!-- Dégradé par dessus -->
       <div class="hero-gradient"></div>
+
+      <!-- Points de navigation du diaporama -->
+      <div class="hero-dots" id="heroDots"></div>
+
+      <!-- Contenu texte du hero (1ère vidéo par défaut) -->
       <div class="hero-content" id="heroContent"></div>
+
     </div>
 
     <!-- GRILLE DES VLOGS -->
@@ -49,7 +55,6 @@
 
   </div>
 
-  <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
   <script type="module" src="home.js"></script>

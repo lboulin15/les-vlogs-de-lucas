@@ -1,5 +1,5 @@
 // ============================================================
-// home.js — V2 anti-freeze
+// home.js — V4 avec diaporama hero personnalisé
 // ============================================================
 import { supabase } from './supabaseClient.js';
 
@@ -22,9 +22,10 @@ function showPage() {
     const adminLink     = document.getElementById('adminLink');
     const logoutBtn     = document.getElementById('logoutBtn');
     const navBrand      = document.getElementById('navBrand');
-    const heroBg        = document.getElementById('heroBg');
     const heroContent   = document.getElementById('heroContent');
     const videoSections = document.getElementById('videoSections');
+    const heroSlideshow = document.getElementById('heroSlideshow');
+    const heroDots      = document.getElementById('heroDots');
 
     // ---- Auth ----
     const { data: { session } } = await supabase.auth.getSession();
@@ -34,7 +35,6 @@ function showPage() {
     // ---- Profil ----
     const { data: profile } = await supabase
       .from('profiles').select('email, is_admin').eq('id', user.id).single();
-
     const isAdmin = profile?.is_admin === true;
     navUserEmail.textContent = profile?.email || user.email;
     if (isAdmin) adminLink.style.display = 'inline-flex';
@@ -46,7 +46,7 @@ function showPage() {
     navBrand.addEventListener('click', triggerConfetti);
     adminLink.addEventListener('click', (e) => { e.preventDefault(); navigateTo('admin.html'); });
 
-    // ---- Vidéos ----
+    // ---- Vidéos accessibles ----
     let videos = [];
     try {
       if (isAdmin) {
@@ -67,7 +67,7 @@ function showPage() {
       }
     } catch (e) { console.warn('videos error', e); }
 
-    // ---- Commentaires — optionnel, ne bloque pas ----
+    // ---- Comptage commentaires ----
     const commentCounts = {};
     try {
       if (videos.length > 0) {
@@ -78,41 +78,106 @@ function showPage() {
           commentCounts[c.video_id] = (commentCounts[c.video_id] || 0) + 1;
         });
       }
-    } catch (e) { console.warn('comments count error (ignoré)', e); }
+    } catch (e) {}
 
-    // ---- Hero ----
-    try {
-      if (videos.length > 0) {
-        const f = videos[0];
-        heroBg.style.backgroundImage =
-          `url(https://img.youtube.com/vi/${f.youtube_id}/maxresdefault.jpg)`;
-        const date = new Date(f.created_at).toLocaleDateString('fr-FR',
+    // ============================================================
+    // DIAPORAMA HERO
+    // ============================================================
+    if (videos.length > 0) {
+      let currentSlide   = 0;
+      let slideshowTimer = null;
+      const INTERVAL     = 5000; // 5 secondes par slide
+
+      // Créer une slide par vidéo (max 8 slides pour ne pas surcharger)
+      const slideVideos = videos.slice(0, 8);
+
+      slideVideos.forEach((v, i) => {
+        // Slide fond
+        const slide = document.createElement('div');
+        slide.className = `hero-slide${i === 0 ? ' active' : ''}`;
+
+        // Charger maxresdefault, fallback hqdefault
+        const img = new Image();
+        img.onload  = () => { slide.style.backgroundImage = `url(${img.src})`; };
+        img.onerror = () => {
+          slide.style.backgroundImage =
+            `url(https://img.youtube.com/vi/${v.youtube_id}/hqdefault.jpg)`;
+        };
+        img.src = `https://img.youtube.com/vi/${v.youtube_id}/maxresdefault.jpg`;
+
+        heroSlideshow.appendChild(slide);
+
+        // Point de navigation
+        const dot = document.createElement('button');
+        dot.className = `hero-dot${i === 0 ? ' active' : ''}`;
+        dot.setAttribute('aria-label', `Slide ${i + 1}`);
+        dot.addEventListener('click', () => goToSlide(i));
+        heroDots.appendChild(dot);
+      });
+
+      const slides = heroSlideshow.querySelectorAll('.hero-slide');
+      const dots   = heroDots.querySelectorAll('.hero-dot');
+
+      function goToSlide(index) {
+        slides[currentSlide].classList.remove('active');
+        dots[currentSlide].classList.remove('active');
+        currentSlide = index;
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+        updateHeroContent(slideVideos[currentSlide]);
+        resetTimer();
+      }
+
+      function nextSlide() {
+        goToSlide((currentSlide + 1) % slideVideos.length);
+      }
+
+      function resetTimer() {
+        if (slideshowTimer) clearInterval(slideshowTimer);
+        if (slideVideos.length > 1) {
+          slideshowTimer = setInterval(nextSlide, INTERVAL);
+        }
+      }
+
+      function updateHeroContent(v) {
+        const date = new Date(v.created_at).toLocaleDateString('fr-FR',
           { day: 'numeric', month: 'long', year: 'numeric' });
-        const isNew = (Date.now() - new Date(f.created_at)) < 7 * 24 * 60 * 60 * 1000;
-        const count = commentCounts[f.id] || 0;
+        const isNew = (Date.now() - new Date(v.created_at)) < 7 * 24 * 60 * 60 * 1000;
+        const count = commentCounts[v.id] || 0;
         heroContent.innerHTML = `
           <div class="hero-badge">${isNew ? '✨ Nouveau vlog' : '🎬 À la une'}</div>
-          <h1 class="hero-title">${escapeHtml(f.title)}</h1>
+          <h1 class="hero-title">${escapeHtml(v.title)}</h1>
           <div class="hero-meta">Ajouté le ${date} · ${count} commentaire${count > 1 ? 's' : ''}</div>
           <div class="hero-actions">
             <button class="btn btn-primary btn-lg" id="heroPlayBtn">▶ Regarder</button>
             <button class="btn btn-secondary btn-lg" id="heroInfoBtn">↓ Voir tout</button>
           </div>`;
         document.getElementById('heroPlayBtn')
-          .addEventListener('click', () => navigateTo(`video.html?id=${f.id}`));
+          .addEventListener('click', () => navigateTo(`video.html?id=${v.id}`));
         document.getElementById('heroInfoBtn')
           .addEventListener('click', () =>
             document.querySelector('.home-content').scrollIntoView({ behavior: 'smooth' }));
-      } else {
-        heroBg.style.background = 'linear-gradient(135deg,#1a0000,#0a0a0a)';
-        heroContent.innerHTML = `
-          <div class="hero-badge">👋 Bienvenue</div>
-          <h1 class="hero-title">${isAdmin ? 'Bonjour Lucas 👑' : `Bonjour ${(profile?.email||'').split('@')[0]} !`}</h1>
-          <div class="hero-meta">Aucune vidéo disponible.</div>`;
       }
-    } catch (e) { console.warn('hero error', e); }
 
-    // ---- Sections ----
+      // Init
+      updateHeroContent(slideVideos[0]);
+      resetTimer();
+
+      // Pause au survol
+      const hero = document.getElementById('hero');
+      hero.addEventListener('mouseenter', () => { if (slideshowTimer) clearInterval(slideshowTimer); });
+      hero.addEventListener('mouseleave', () => resetTimer());
+
+    } else {
+      // Aucune vidéo dispo
+      heroSlideshow.style.background = 'linear-gradient(135deg,#1a0000,#0a0a0a)';
+      heroContent.innerHTML = `
+        <div class="hero-badge">👋 Bienvenue</div>
+        <h1 class="hero-title">${isAdmin ? 'Bonjour Lucas 👑' : `Bonjour ${(profile?.email || '').split('@')[0]} !`}</h1>
+        <div class="hero-meta">Aucune vidéo disponible pour l'instant.</div>`;
+    }
+
+    // ---- Sections de vidéos ----
     try {
       if (videos.length === 0) {
         videoSections.innerHTML = `
@@ -153,7 +218,6 @@ function showPage() {
   } catch (globalErr) {
     console.error('Erreur globale home.js:', globalErr);
   } finally {
-    // Toujours afficher la page, quoi qu'il arrive
     showPage();
   }
 
@@ -179,16 +243,13 @@ function showPage() {
     card.className = 'video-card fade-in';
     card.style.animationDelay = `${Math.min(index * 0.05, 0.5)}s`;
     const thumb = `https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`;
-    const date  = new Date(video.created_at).toLocaleDateString('fr-FR',
-      { day: 'numeric', month: 'short' });
+    const date  = new Date(video.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     const isNew = (Date.now() - new Date(video.created_at)) < 7 * 24 * 60 * 60 * 1000;
     card.innerHTML = `
       <div class="video-thumb">
         <img src="${thumb}" alt="${escapeHtml(video.title)}" loading="lazy" />
         <div class="video-thumb-overlay">
-          <div class="play-icon">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
+          <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
         </div>
         ${isNew ? '<div class="badge-new">Nouveau</div>' : ''}
         ${progress > 0 ? `<div class="video-progress-bar" style="width:${progress}%"></div>` : ''}
@@ -221,13 +282,7 @@ function showPage() {
     for (let i = 0; i < 80; i++) {
       const p = document.createElement('div');
       p.className = 'confetti-piece';
-      p.style.cssText = `
-        left:${Math.random()*100}vw;top:-10px;
-        background:${colors[Math.floor(Math.random()*colors.length)]};
-        width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;
-        border-radius:${Math.random()>.5?'50%':'2px'};
-        animation-duration:${1.5+Math.random()*2}s;
-        animation-delay:${Math.random()*0.4}s;`;
+      p.style.cssText = `left:${Math.random()*100}vw;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*0.4}s;`;
       document.body.appendChild(p);
       setTimeout(() => p.remove(), 4000);
     }
@@ -239,9 +294,7 @@ function showPage() {
     return d.innerHTML;
   }
 
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
+  function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 
   supabase.auth.onAuthStateChange(event => {
     if (event === 'SIGNED_OUT') window.location.href = 'index.html';
