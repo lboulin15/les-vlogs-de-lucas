@@ -64,12 +64,12 @@ window.onYouTubeIframeAPIReady = () => {
 
   // ---- Thème toggle ----
   function applyTheme(t) {
-    if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeToggle.textContent = '☀️'; }
-    else { document.documentElement.removeAttribute('data-theme'); themeToggle.textContent = '🌙'; }
+    if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); if (themeToggle) themeToggle.textContent = '☀️'; }
+    else { document.documentElement.removeAttribute('data-theme'); if (themeToggle) themeToggle.textContent = '🌙'; }
     localStorage.setItem('theme', t);
   }
   applyTheme(savedTheme);
-  themeToggle.addEventListener('click', () => applyTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'));
+  themeToggle?.addEventListener('click', () => applyTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'));
 
   // ---- Auth ----
   const { data: { session } } = await supabase.auth.getSession();

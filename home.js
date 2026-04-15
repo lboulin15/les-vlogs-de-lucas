@@ -1,8 +1,13 @@
 // ============================================================
-// home.js — V5 YouTube + Vimeo
+// home.js — V3 avec recherche, continuer à regarder, notifications, thème
 // ============================================================
 import { supabase } from './supabaseClient.js';
 
+// ---- Thème ----
+const savedTheme = localStorage.getItem('theme') || 'dark';
+if (savedTheme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+
+// ---- Navigation ----
 const pageTransition = document.getElementById('pageTransition');
 function navigateTo(url) {
   pageTransition.classList.add('out');
@@ -16,19 +21,13 @@ function showPage() {
   setTimeout(() => { pageTransition.style.opacity = '0'; }, 50);
 }
 
-// Retourne la miniature d'une vidéo (YouTube ou Vimeo)
 function getThumb(v, quality = 'mq') {
   if (v.thumbnail_url) return v.thumbnail_url;
   if ((v.platform || 'youtube') === 'youtube') {
-    const q = quality === 'max'
-      ? 'maxresdefault'
-      : quality === 'hq'
-        ? 'hqdefault'
-        : 'mqdefault';
+    const q = quality === 'max' ? 'maxresdefault' : quality === 'hq' ? 'hqdefault' : 'mqdefault';
     return `https://img.youtube.com/vi/${v.youtube_id}/${q}.jpg`;
   }
-  // Fallback Vimeo sans thumbnail_url stockée
-  return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect fill="%231a1a1a" width="320" height="180"/><text x="50%" y="50%" fill="%23555" font-size="14" text-anchor="middle" dy=".3em">Vimeo</text></svg>';
+  return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect fill="%231a1a1a" width="320" height="180"/><text x="50%" y="50%" fill="%23555" font-size="14" text-anchor="middle" dy=".3em">Vimeo</text></svg>`;
 }
 
 (async () => {
@@ -41,6 +40,16 @@ function getThumb(v, quality = 'mq') {
     const videoSections = document.getElementById('videoSections');
     const heroSlideshow = document.getElementById('heroSlideshow');
     const heroDots      = document.getElementById('heroDots');
+    const themeToggle   = document.getElementById('themeToggle');
+    const notifBtn      = document.getElementById('notifBtn');
+    const notifDropdown = document.getElementById('notifDropdown');
+    const notifBadge    = document.getElementById('notifBadge');
+    const notifList     = document.getElementById('notifList');
+    const notifMarkAll  = document.getElementById('notifMarkAll');
+    const searchInput   = document.getElementById('searchInput');
+    const searchDropdown = document.getElementById('searchDropdown');
+    const continueSection = document.getElementById('continueSection');
+    const continueRow   = document.getElementById('continueRow');
 
     // ---- Auth ----
     const { data: { session } } = await supabase.auth.getSession();
@@ -54,39 +63,175 @@ function getThumb(v, quality = 'mq') {
     navUserEmail.textContent = profile?.email || user.email;
     if (isAdmin) adminLink.style.display = 'inline-flex';
 
+    // ---- Thème toggle ----
+    function applyTheme(t) {
+      if (t === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        if (themeToggle) themeToggle.textContent = '☀️';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        if (themeToggle) themeToggle.textContent = '🌙';
+      }
+      localStorage.setItem('theme', t);
+    }
+    applyTheme(savedTheme);
+    themeToggle.addEventListener('click', () => {
+      const current = localStorage.getItem('theme') || 'dark';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    });
+
+    // ---- Events ----
     logoutBtn.addEventListener('click', async () => { await supabase.auth.signOut(); navigateTo('index.html'); });
     navBrand.addEventListener('click', triggerConfetti);
     adminLink.addEventListener('click', e => { e.preventDefault(); navigateTo('admin.html'); });
 
-    // ---- Vidéos accessibles ----
+    // ---- Vidéos ----
     let videos = [];
-    try {
-      if (isAdmin) {
+    if (isAdmin) {
+      const { data } = await supabase
+        .from('videos').select('id, title, youtube_id, platform, vimeo_hash, thumbnail_url, created_at')
+        .order('created_at', { ascending: false });
+      videos = data || [];
+    } else {
+      const { data: uvData } = await supabase.from('user_videos').select('video_id').eq('user_id', user.id);
+      if (uvData && uvData.length > 0) {
+        const ids = uvData.map(uv => uv.video_id);
         const { data } = await supabase
-          .from('videos').select('id, title, youtube_id, platform, thumbnail_url, created_at')
-          .order('created_at', { ascending: false });
+          .from('videos').select('id, title, youtube_id, platform, vimeo_hash, thumbnail_url, created_at')
+          .in('id', ids).order('created_at', { ascending: false });
         videos = data || [];
-      } else {
-        const { data: uvData } = await supabase.from('user_videos').select('video_id').eq('user_id', user.id);
-        if (uvData && uvData.length > 0) {
-          const ids = uvData.map(uv => uv.video_id);
-          const { data } = await supabase
-            .from('videos').select('id, title, youtube_id, platform, thumbnail_url, created_at')
-            .in('id', ids).order('created_at', { ascending: false });
-          videos = data || [];
-        }
       }
-    } catch (e) { console.warn('videos error', e); }
+    }
 
-    // ---- Commentaires ----
+    // ---- Commentaires count ----
     const commentCounts = {};
-    try {
-      if (videos.length > 0) {
-        const ids = videos.map(v => v.id);
-        const { data: comments } = await supabase.from('comments').select('video_id').in('video_id', ids);
-        (comments || []).forEach(c => { commentCounts[c.video_id] = (commentCounts[c.video_id] || 0) + 1; });
+    if (videos.length > 0) {
+      const ids = videos.map(v => v.id);
+      const { data: comments } = await supabase.from('comments').select('video_id').in('video_id', ids);
+      (comments || []).forEach(c => { commentCounts[c.video_id] = (commentCounts[c.video_id] || 0) + 1; });
+    }
+
+    // ---- Watch history (continuer à regarder) ----
+    let watchMap = {}; // video_id -> progress %
+    if (videos.length > 0) {
+      const { data: wh } = await supabase
+        .from('watch_history')
+        .select('video_id, progress')
+        .eq('user_id', user.id)
+        .in('video_id', videos.map(v => v.id));
+      (wh || []).forEach(w => { watchMap[w.video_id] = w.progress; });
+    }
+
+    // Continuer à regarder : vidéos entre 5% et 95%
+    const inProgress = videos.filter(v => {
+      const p = watchMap[v.id] || 0;
+      return p > 5 && p < 95;
+    });
+    if (inProgress.length > 0) {
+      continueSection.style.display = 'block';
+      inProgress.forEach(v => {
+        const pct = watchMap[v.id] || 0;
+        const card = document.createElement('div');
+        card.className = 'continue-card';
+        card.innerHTML = `
+          <div class="continue-thumb">
+            <img src="${getThumb(v, 'mq')}" alt="${escapeHtml(v.title)}" loading="lazy" />
+            <div class="continue-progress" style="width:${pct}%"></div>
+          </div>
+          <div class="continue-info">
+            <div class="continue-card-title">${escapeHtml(v.title)}</div>
+            <div class="continue-pct">${pct}% regardé</div>
+          </div>`;
+        card.addEventListener('click', () => navigateTo(`video.html?id=${v.id}`));
+        continueRow.appendChild(card);
+      });
+    }
+
+    // ---- Notifications ----
+    async function loadNotifications() {
+      const { data: notifs } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      const unread = (notifs || []).filter(n => !n.read).length;
+      if (unread > 0) {
+        notifBadge.style.display = 'flex';
+        notifBadge.textContent = unread > 9 ? '9+' : unread;
+      } else {
+        notifBadge.style.display = 'none';
       }
-    } catch (e) {}
+      notifList.innerHTML = '';
+      if (!notifs || notifs.length === 0) {
+        notifList.innerHTML = '<div class="notif-empty">Aucune notification</div>';
+        return;
+      }
+      notifs.forEach(n => {
+        const div = document.createElement('div');
+        div.className = `notif-item${n.read ? '' : ' unread'}`;
+        const timeAgo = formatTimeAgo(new Date(n.created_at));
+        div.innerHTML = `
+          <div class="notif-dot"></div>
+          <div class="notif-content">
+            <div class="notif-title">${escapeHtml(n.title)}</div>
+            <div class="notif-msg">${escapeHtml(n.message)}</div>
+            <div class="notif-time">${timeAgo}</div>
+          </div>`;
+        if (n.video_id) {
+          div.addEventListener('click', () => {
+            navigateTo(`video.html?id=${n.video_id}`);
+          });
+        }
+        notifList.appendChild(div);
+      });
+    }
+    await loadNotifications();
+
+    notifBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      notifDropdown.classList.toggle('open');
+    });
+    notifMarkAll.addEventListener('click', async () => {
+      await supabase.from('notifications').update({ read: true }).eq('user_id', user.id);
+      await loadNotifications();
+    });
+    document.addEventListener('click', (e) => {
+      if (!notifDropdown.contains(e.target) && e.target !== notifBtn) {
+        notifDropdown.classList.remove('open');
+      }
+    });
+
+    // ---- Recherche ----
+    let searchTimer = null;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) { searchDropdown.classList.remove('open'); return; }
+      searchTimer = setTimeout(() => {
+        const results = videos.filter(v => v.title.toLowerCase().includes(q)).slice(0, 6);
+        if (results.length === 0) {
+          searchDropdown.innerHTML = `<div style="padding:14px 16px;font-size:0.82rem;color:var(--text-dim);">Aucun résultat</div>`;
+        } else {
+          searchDropdown.innerHTML = '';
+          results.forEach(v => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            item.innerHTML = `
+              <img class="search-result-thumb" src="${getThumb(v, 'mq')}" alt="" />
+              <div class="search-result-title">${escapeHtml(v.title)}</div>`;
+            item.addEventListener('click', () => navigateTo(`video.html?id=${v.id}`));
+            searchDropdown.appendChild(item);
+          });
+        }
+        searchDropdown.classList.add('open');
+      }, 200);
+    });
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('navSearch').contains(e.target)) {
+        searchDropdown.classList.remove('open');
+      }
+    });
 
     // ============================================================
     // DIAPORAMA HERO
@@ -100,27 +245,17 @@ function getThumb(v, quality = 'mq') {
       slideVideos.forEach((v, i) => {
         const slide = document.createElement('div');
         slide.className = `hero-slide${i === 0 ? ' active' : ''}`;
-
         const platform = v.platform || 'youtube';
-
         if (platform === 'youtube') {
-          // YouTube : essayer maxresdefault, fallback hqdefault
           const img = new Image();
           img.onload  = () => { slide.style.backgroundImage = `url(${img.src})`; };
           img.onerror = () => { slide.style.backgroundImage = `url(https://img.youtube.com/vi/${v.youtube_id}/hqdefault.jpg)`; };
           img.src = `https://img.youtube.com/vi/${v.youtube_id}/maxresdefault.jpg`;
         } else {
-          // Vimeo : utiliser thumbnail_url stockée
-          if (v.thumbnail_url) {
-            slide.style.backgroundImage = `url(${v.thumbnail_url})`;
-          } else {
-            slide.style.background = 'linear-gradient(135deg, #1a0a1a, #0a0a0a)';
-          }
+          if (v.thumbnail_url) slide.style.backgroundImage = `url(${v.thumbnail_url})`;
+          else slide.style.background = 'linear-gradient(135deg, #1a0a1a, #0a0a0a)';
         }
-
         heroSlideshow.appendChild(slide);
-
-        // Point de navigation
         const dot = document.createElement('button');
         dot.className = `hero-dot${i === 0 ? ' active' : ''}`;
         dot.setAttribute('aria-label', `Slide ${i + 1}`);
@@ -140,14 +275,11 @@ function getThumb(v, quality = 'mq') {
         updateHeroContent(slideVideos[currentSlide]);
         resetTimer();
       }
-
       function nextSlide() { goToSlide((currentSlide + 1) % slideVideos.length); }
-
       function resetTimer() {
         if (slideshowTimer) clearInterval(slideshowTimer);
         if (slideVideos.length > 1) slideshowTimer = setInterval(nextSlide, INTERVAL);
       }
-
       function updateHeroContent(v) {
         const date   = new Date(v.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
         const isNew  = (Date.now() - new Date(v.created_at)) < 7 * 24 * 60 * 60 * 1000;
@@ -157,8 +289,8 @@ function getThumb(v, quality = 'mq') {
           <div class="hero-badge">${isNew ? '✨ Nouveau vlog' : '🎬 À la une'}</div>
           <h1 class="hero-title">${escapeHtml(v.title)}</h1>
           <div class="hero-meta">
-            Ajouté le ${date} · ${count} commentaire${count > 1 ? 's' : ''}
-            ${isVimeo ? ' · <span style="color:var(--gold);font-size:0.8rem;">Vimeo</span>' : ''}
+            ${date} · ${count} commentaire${count !== 1 ? 's' : ''}
+            ${isVimeo ? ' · <span style="color:#1ab7ea;font-size:0.8rem;">Vimeo</span>' : ''}
           </div>
           <div class="hero-actions">
             <button class="btn btn-primary btn-lg" id="heroPlayBtn">▶ Regarder</button>
@@ -168,72 +300,60 @@ function getThumb(v, quality = 'mq') {
         document.getElementById('heroInfoBtn').addEventListener('click', () =>
           document.querySelector('.home-content').scrollIntoView({ behavior: 'smooth' }));
       }
-
       updateHeroContent(slideVideos[0]);
       resetTimer();
-
       const hero = document.getElementById('hero');
       hero.addEventListener('mouseenter', () => { if (slideshowTimer) clearInterval(slideshowTimer); });
       hero.addEventListener('mouseleave', () => resetTimer());
-
     } else {
       heroSlideshow.style.background = 'linear-gradient(135deg,#1a0000,#0a0a0a)';
       heroContent.innerHTML = `
         <div class="hero-badge">👋 Bienvenue</div>
-        <h1 class="hero-title">${isAdmin ? 'Bonjour Lucas 👑' : `Bonjour ${(profile?.email || '').split('@')[0]} !`}</h1>
+        <h1 class="hero-title">${isAdmin ? 'Bonjour Lucas 👑' : `Bienvenue !`}</h1>
         <div class="hero-meta">Aucune vidéo disponible pour l'instant.</div>`;
     }
 
     // ============================================================
     // GRILLE DES VLOGS
     // ============================================================
-    try {
-      if (videos.length === 0) {
-        videoSections.innerHTML = `
-          <div class="empty-state" style="padding:60px 20px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53
-                   l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0
-                   0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9A2.25 2.25 0 004.5 18.75z"/>
-            </svg>
-            <p>Aucune vidéo disponible.<br>Contactez l'administrateur.</p>
-          </div>`;
-      } else {
-        const groups = groupByMonth(videos);
-        let idx = 0;
-        groups.forEach(group => {
-          const curLabel  = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-          const isCurrent = group.label === curLabel;
-          const section   = document.createElement('div');
-          section.className = 'video-section';
-          section.innerHTML = `
-            <div class="video-section-title">
-              ${isCurrent ? '🔥 Ce mois-ci' : `📅 ${capitalize(group.label)}`}
-              <span>${group.videos.length} vidéo${group.videos.length > 1 ? 's' : ''}</span>
-            </div>
-            <div class="video-row"></div>`;
-          videoSections.appendChild(section);
-          const row = section.querySelector('.video-row');
-          group.videos.forEach((v, i) => {
-            row.appendChild(buildCard(v, commentCounts[v.id] || 0, getProgress(v.id), idx + i));
-          });
-          idx += group.videos.length;
+    if (videos.length === 0) {
+      videoSections.innerHTML = `
+        <div class="empty-state" style="padding:60px 20px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9A2.25 2.25 0 004.5 18.75z"/>
+          </svg>
+          <p>Aucune vidéo disponible.<br>Contactez l'administrateur.</p>
+        </div>`;
+    } else {
+      const groups = groupByMonth(videos);
+      let idx = 0;
+      groups.forEach(group => {
+        const curLabel  = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        const isCurrent = group.label === curLabel;
+        const section   = document.createElement('div');
+        section.className = 'video-section';
+        section.innerHTML = `
+          <div class="video-section-title">
+            ${isCurrent ? '🔥 Ce mois-ci' : `📅 ${capitalize(group.label)}`}
+            <span>${group.videos.length} vidéo${group.videos.length > 1 ? 's' : ''}</span>
+          </div>
+          <div class="video-row"></div>`;
+        videoSections.appendChild(section);
+        const row = section.querySelector('.video-row');
+        group.videos.forEach((v, i) => {
+          row.appendChild(buildCard(v, commentCounts[v.id] || 0, watchMap[v.id] || 0, idx + i));
         });
-      }
-    } catch (e) { console.warn('sections error', e); }
+        idx += group.videos.length;
+      });
+    }
 
-  } catch (globalErr) {
-    console.error('Erreur globale home.js:', globalErr);
+  } catch (err) {
+    console.error('Erreur globale home.js:', err);
   } finally {
     showPage();
   }
 
   // ---- Helpers ----
-  function getProgress(videoId) {
-    try { return parseInt(localStorage.getItem(`progress_${videoId}`) || '0'); } catch { return 0; }
-  }
-
   function groupByMonth(list) {
     const groups = {};
     list.forEach(v => {
@@ -254,7 +374,6 @@ function getThumb(v, quality = 'mq') {
     const date     = new Date(video.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     const isNew    = (Date.now() - new Date(video.created_at)) < 7 * 24 * 60 * 60 * 1000;
     const isVimeo  = (video.platform || 'youtube') === 'vimeo';
-
     card.innerHTML = `
       <div class="video-thumb">
         <img src="${thumb}" alt="${escapeHtml(video.title)}" loading="lazy" />
@@ -271,14 +390,7 @@ function getThumb(v, quality = 'mq') {
           <span>${date}</span>
           <span class="video-comment-count">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125
-                   0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375
-                   0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25
-                   -9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a
-                   5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133
-                   -.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9
-                   -8.25s9 3.694 9 8.25z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/>
             </svg>
             ${commentCount}
           </span>
@@ -297,6 +409,18 @@ function getThumb(v, quality = 'mq') {
       document.body.appendChild(p);
       setTimeout(() => p.remove(), 4000);
     }
+  }
+
+  function formatTimeAgo(date) {
+    const diff = Date.now() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'à l\'instant';
+    if (mins < 60) return `il y a ${mins} min`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `il y a ${hours}h`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `il y a ${days}j`;
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   }
 
   function escapeHtml(str) {
