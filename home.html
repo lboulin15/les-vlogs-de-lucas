@@ -18,70 +18,88 @@
   <nav class="navbar" id="navbar" style="display:none">
     <div class="navbar-brand" id="navBrand">
       <div class="navbar-pulse"></div>
-      LES VLOGS <span>&nbsp;DE LUCAS</span>
+      LES VLOGS <span>DE LUCAS</span>
     </div>
 
-    <!-- Search bar -->
     <div class="navbar-search" id="navSearch">
       <svg class="navbar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
       </svg>
-      <input type="text" id="searchInput" placeholder="Rechercher un vlog..." autocomplete="off" />
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Rechercher un vlog..."
+        autocomplete="off"
+      />
       <div class="search-results-dropdown" id="searchDropdown"></div>
     </div>
 
     <div class="navbar-right">
       <span class="navbar-user" id="navUserEmail"></span>
-      <a href="admin.html" class="btn btn-secondary btn-sm" id="adminLink" style="display:none">👑 Admin</a>
 
-      <!-- Notifications -->
+      <a
+        href="admin.html"
+        class="btn btn-secondary btn-sm"
+        id="adminLink"
+        style="display:none"
+      >
+        👑 Admin
+      </a>
+
       <button class="notif-btn" id="notifBtn" title="Notifications">
         🔔
         <span class="notif-badge" id="notifBadge" style="display:none">0</span>
       </button>
 
-      <!-- Theme toggle -->
-      <button class="theme-toggle" id="themeToggle" title="Changer de thème">🌙</button>
+      <button class="theme-toggle" id="themeToggle" title="Changer de thème">
+        🌙
+      </button>
 
-      <!-- Profile -->
-      <a href="profile.html" class="btn btn-ghost btn-sm" id="profileBtn">👤</a>
+      <a href="profile.html" class="btn btn-ghost btn-sm" id="profileBtn">
+        👤
+      </a>
 
-      <button class="btn btn-ghost btn-sm" id="logoutBtn">Déco</button>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">
+        Déconnexion
+      </button>
     </div>
   </nav>
 
-  <!-- Notifications dropdown -->
   <div class="notif-dropdown" id="notifDropdown">
     <div class="notif-header">
       <span class="notif-header-title">🔔 Notifications</span>
       <button class="notif-mark-all" id="notifMarkAll">Tout marquer lu</button>
     </div>
+
     <div class="notif-list" id="notifList">
       <div class="notif-empty">Aucune notification</div>
     </div>
   </div>
 
-  <div class="home-page" id="homePage" style="display:none">
+  <main class="home-page" id="homePage" style="display:none">
 
-    <div class="home-hero-cinematic" id="hero">
+    <section class="home-hero-cinematic" id="hero">
       <div class="hero-slideshow" id="heroSlideshow"></div>
       <div class="hero-gradient"></div>
       <div class="hero-dots" id="heroDots"></div>
       <div class="hero-content" id="heroContent"></div>
-    </div>
+    </section>
 
-    <div class="home-content">
-      <!-- Continue watching -->
+    <section class="home-content">
+
       <div class="continue-section" id="continueSection" style="display:none">
         <div class="continue-title">▶ Continuer à regarder</div>
         <div class="continue-row" id="continueRow"></div>
       </div>
-      <div class="video-sections" id="videoSections"></div>
-    </div>
 
-  </div>
+      <div class="video-sections" id="videoSections"></div>
+
+    </section>
+
+  </main>
 
   <div class="toast" id="toast"></div>
+
   <script type="module" src="home.js"></script>
 </body>
 </html>

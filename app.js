@@ -1,73 +1,185 @@
 // ============================================================
-// app.js — Login
+// app.js — Connexion + popup bienvenue
 // ============================================================
 import { supabase } from './supabaseClient.js';
 
 (async () => {
+  // ============================================================
+  // SESSION EXISTANTE
+  // ============================================================
   const { data: { session } } = await supabase.auth.getSession();
-  if (session) { window.location.href = 'home.html'; return; }
-
-  // Theme persistence
-  const saved = localStorage.getItem('theme') || 'dark';
-  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
-
-  // Toggle mot de passe
-  const passwordInput  = document.getElementById('password');
-  const passwordToggle = document.getElementById('passwordToggle');
-  const eyeOff = passwordToggle.querySelector('.eye-off');
-  const eyeOn  = passwordToggle.querySelector('.eye-on');
-
-  passwordToggle.addEventListener('click', () => {
-    const isHidden = passwordInput.type === 'password';
-    passwordInput.type   = isHidden ? 'text'  : 'password';
-    eyeOff.style.display = isHidden ? 'none'  : 'block';
-    eyeOn.style.display  = isHidden ? 'block' : 'none';
-  });
-
-  // Popup bienvenue
-  const welcomeOverlay  = document.getElementById('welcomeOverlay');
-  const welcomeEnterBtn = document.getElementById('welcomeEnterBtn');
-
-  function showWelcomePopup() {
-    document.activeElement?.blur();
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    document.body.style.overflow = 'hidden';
-    setTimeout(() => { welcomeOverlay.classList.add('open'); }, 120);
+  if (session) {
+    window.location.href = 'home.html';
+    return;
   }
 
-  welcomeEnterBtn.addEventListener('click', () => {
-    welcomeOverlay.classList.add('closing');
-    document.body.style.overflow = '';
-    setTimeout(() => { window.location.href = 'home.html'; }, 400);
-  });
-
-  // Formulaire
-  const form       = document.getElementById('loginForm');
+  // ============================================================
+  // DOM
+  // ============================================================
+  const form = document.getElementById('loginForm');
   const emailInput = document.getElementById('email');
-  const loginBtn   = document.getElementById('loginBtn');
+  const passwordInput = document.getElementById('password');
+  const passwordToggle = document.getElementById('passwordToggle');
+  const loginBtn = document.getElementById('loginBtn');
   const loginError = document.getElementById('loginError');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    setLoading(true); clearError();
-    const email    = emailInput.value.trim();
-    const password = passwordInput.value;
-    if (!email || !password) { showError('Veuillez remplir tous les champs.'); setLoading(false); return; }
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        showError(error.message.includes('Invalid login') ? 'Email ou mot de passe incorrect.' : error.message);
-        setLoading(false); return;
-      }
-      if (data.user) {
-        const pseudo = (data.user.email || '').split('@')[0];
-        document.getElementById('welcomeName').textContent = pseudo;
-        showWelcomePopup();
-      }
-    } catch { showError('Une erreur est survenue. Réessayez.'); setLoading(false); }
+  const eyeOff = passwordToggle?.querySelector('.eye-off');
+  const eyeOn = passwordToggle?.querySelector('.eye-on');
+
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  const welcomeEnterBtn = document.getElementById('welcomeEnterBtn');
+  const welcomeName = document.getElementById('welcomeName');
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+  function showError(message) {
+    if (!loginError) return;
+    loginError.textContent = message;
+    loginError.classList.add('visible');
+  }
+
+  function clearError() {
+    if (!loginError) return;
+    loginError.textContent = '';
+    loginError.classList.remove('visible');
+  }
+
+  function setLoading(isLoading) {
+    if (!loginBtn) return;
+    loginBtn.disabled = isLoading;
+    loginBtn.textContent = isLoading ? 'Connexion...' : 'Se connecter';
+  }
+
+  function showWelcomePopup(name) {
+    if (!welcomeOverlay || !welcomeName) return;
+
+    welcomeName.textContent = name || 'invité';
+    document.body.style.overflow = 'hidden';
+    welcomeOverlay.setAttribute('aria-hidden', 'false');
+
+    requestAnimationFrame(() => {
+      welcomeOverlay.classList.add('open');
+    });
+  }
+
+  function closeWelcomePopupAndEnter() {
+    if (!welcomeOverlay) {
+      window.location.href = 'home.html';
+      return;
+    }
+
+    welcomeOverlay.classList.add('closing');
+    document.body.style.overflow = '';
+
+    setTimeout(() => {
+      window.location.href = 'home.html';
+    }, 380);
+  }
+
+  // ============================================================
+  // THEME
+  // ============================================================
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  if (savedTheme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+
+  // ============================================================
+  // TOGGLE MOT DE PASSE
+  // ============================================================
+  passwordToggle?.addEventListener('click', () => {
+    const isHidden = passwordInput.type === 'password';
+    passwordInput.type = isHidden ? 'text' : 'password';
+
+    if (eyeOff) eyeOff.style.display = isHidden ? 'none' : 'inline';
+    if (eyeOn) eyeOn.style.display = isHidden ? 'inline' : 'none';
   });
 
-  function showError(msg) { loginError.textContent = msg; loginError.classList.add('visible'); }
-  function clearError()   { loginError.textContent = ''; loginError.classList.remove('visible'); }
-  function setLoading(l)  { loginBtn.disabled = l; loginBtn.textContent = l ? 'Connexion...' : 'Se connecter'; }
+  // ============================================================
+  // SOUMISSION FORMULAIRE
+  // ============================================================
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    clearError();
+    setLoading(true);
+
+    const email = emailInput?.value.trim() || '';
+    const password = passwordInput?.value || '';
+
+    if (!email || !password) {
+      showError('Veuillez remplir tous les champs.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        const msg = error.message?.toLowerCase().includes('invalid login')
+          ? 'Email ou mot de passe incorrect.'
+          : 'Impossible de se connecter.';
+        showError(msg);
+        setLoading(false);
+        return;
+      }
+
+      if (data?.user) {
+        const pseudo = (data.user.email || email).split('@')[0];
+        showWelcomePopup(pseudo);
+      } else {
+        showError('Connexion impossible.');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Erreur connexion :', err);
+      showError('Une erreur est survenue. Réessayez.');
+      setLoading(false);
+    }
+  });
+
+  // ============================================================
+  // BOUTON DU POPUP
+  // ============================================================
+  welcomeEnterBtn?.addEventListener('click', () => {
+    closeWelcomePopupAndEnter();
+  });
+
+  // ============================================================
+  // FERMETURE POPUP AVEC ENTRÉE / ÉCHAP
+  // ============================================================
+  document.addEventListener('keydown', (e) => {
+    if (!welcomeOverlay?.classList.contains('open')) return;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      closeWelcomePopupAndEnter();
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeWelcomePopupAndEnter();
+    }
+  });
+
+  // ============================================================
+  // SYNC AUTH
+  // ============================================================
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN') {
+      // on laisse le popup gérer la redirection
+    }
+
+    if (event === 'SIGNED_OUT') {
+      clearError();
+      setLoading(false);
+    }
+  });
 })();

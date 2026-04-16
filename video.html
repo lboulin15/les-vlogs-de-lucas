@@ -3,78 +3,113 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vlog — Les Vlogs de Lucas</title>
+  <title>Lecture — Les Vlogs de Lucas</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="netflix video-page-body">
 
-  <div class="page-transition" id="pageTransition"></div>
-
+  <!-- LOADING -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-logo">LUCAS</div>
     <div class="spinner"></div>
   </div>
 
-  <nav class="navbar" id="navbar" style="display:none">
-    <div class="navbar-brand">LES VLOGS <span>DE LUCAS</span></div>
-    <div class="navbar-right">
-      <span class="navbar-user" id="navUserEmail"></span>
-      <a href="admin.html" class="btn btn-secondary btn-sm" id="adminLink" style="display:none">
-        👑 Panel Admin
-      </a>
-      <button class="btn btn-ghost btn-sm" id="logoutBtn">Déconnexion</button>
+  <!-- PAGE VIDEO -->
+  <main class="video-layout" id="videoPage" style="display:none;">
+
+    <!-- ACTIONS TOP -->
+    <div class="video-top-actions">
+      <button class="video-top-btn" id="backBtn">← Retour</button>
+      <button class="video-top-btn" id="logoutBtn">Déconnexion</button>
     </div>
-  </nav>
 
-  <main class="video-page" id="videoPage" style="display:none">
-    <div class="video-container">
+    <!-- BLOC PRINCIPAL -->
+   <section class="video-main-block">
 
-      <button class="back-btn" id="backBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-        </svg>
-        Retour
-      </button>
-
-      <div class="video-player-wrap" id="playerWrap"></div>
-
-      <h1 class="video-title-page" id="videoTitle"></h1>
-      <p class="video-date" id="videoDate"></p>
-
-      <!-- NOTE / RATING -->
-      <div class="rating-section" id="ratingSection">
-        <div class="rating-label">Votre note</div>
-        <div class="star-rating" id="starRating">
-          <button class="star" data-value="1" aria-label="1 étoile">★</button>
-          <button class="star" data-value="2" aria-label="2 étoiles">★</button>
-          <button class="star" data-value="3" aria-label="3 étoiles">★</button>
-          <button class="star" data-value="4" aria-label="4 étoiles">★</button>
-          <button class="star" data-value="5" aria-label="5 étoiles">★</button>
-        </div>
-        <div class="rating-average" id="ratingAverage"></div>
-      </div>
-
-      <!-- VIDÉOS SUGGÉRÉES -->
-      <div class="suggested-section" id="suggestedSection" style="display:none">
-        <h2 class="suggested-title">🎬 À regarder ensuite</h2>
-        <div class="suggested-row" id="suggestedRow"></div>
-      </div>
-
-      <!-- COMMENTAIRES -->
-      <div class="comments-section">
-        <h2 class="comments-title">💬 Commentaires</h2>
-        <div class="comment-form">
-          <textarea class="form-input" id="commentInput" placeholder="Laissez un commentaire..." rows="3"></textarea>
-          <div style="display:flex; justify-content:flex-end;">
-            <button class="btn btn-primary" id="commentSubmit">Publier</button>
-          </div>
-        </div>
-        <div class="comment-list" id="commentList"></div>
-      </div>
-
+  <div class="video-hero-card">
+    <!-- PLAYER -->
+    <div class="video-player-shell">
+      <div class="video-player-main" id="playerWrap"></div>
     </div>
+
+    <!-- INFOS -->
+    <div class="video-hero-content">
+      <div class="video-title-block">
+        <div class="video-kicker">LES VLOGS DE LUCAS</div>
+        <h1 class="video-title-main" id="videoTitle">Titre vidéo</h1>
+        <div class="video-meta-main">
+          <span class="video-date-main" id="videoDate"></span>
+          <span class="video-meta-separator">•</span>
+          <span class="video-category-main">Vlog</span>
+        </div>
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="video-description-card">
+        <div class="video-description-main" id="videoDescription">
+          Description de la vidéo
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="video-rating-block">
+        <div class="rating-label-main">Votre note</div>
+
+        <div class="stars" id="starRating">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+
+        <div id="ratingAverage" class="rating-average-main"></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+    <!-- SUGGESTIONS -->
+    <section class="suggestions-block row-section" id="suggestedSection" style="display:none;">
+      <h2 class="row-title">À regarder ensuite</h2>
+
+      <div class="row-slider">
+        <button class="row-btn left" id="prevBtn">‹</button>
+
+        <div class="row-window">
+          <div class="row-track" id="suggestedTrack"></div>
+        </div>
+
+        <button class="row-btn right" id="nextBtn">›</button>
+      </div>
+    </section>
+
+    <!-- COMMENTAIRES -->
+    <section class="comments-block comments-section">
+      <h2 class="row-title">Commentaires</h2>
+
+      <div class="comment-form">
+        <textarea
+          id="commentInput"
+          class="comment-input"
+          placeholder="Écrire un commentaire..."
+          maxlength="1000"
+        ></textarea>
+
+        <button id="commentSubmit" class="btn btn-primary">
+          Publier
+        </button>
+      </div>
+
+      <div class="comment-list" id="commentList">
+        <p class="comment-empty">Chargement des commentaires...</p>
+      </div>
+    </section>
+
   </main>
 
+  <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
   <script type="module" src="video.js"></script>

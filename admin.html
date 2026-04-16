@@ -14,7 +14,9 @@
   </div>
 
   <nav class="navbar" id="navbar" style="display:none">
-    <div class="navbar-brand">LES VLOGS <span>DE LUCAS</span> — <span style="color:var(--gold);font-size:1.1rem;">ADMIN</span></div>
+    <div class="navbar-brand">
+      LES VLOGS <span>DE LUCAS</span> — <span style="color:var(--gold);font-size:1.1rem;">ADMIN</span>
+    </div>
     <div class="navbar-right">
       <button class="theme-toggle" id="themeToggle">🌙</button>
       <a href="home.html" class="btn btn-secondary btn-sm">🎬 Vlogs</a>
@@ -25,39 +27,57 @@
   <div class="admin-page" id="adminPage" style="display:none">
     <div class="admin-layout">
 
-      <!-- SIDEBAR -->
       <aside class="admin-sidebar">
         <div class="sidebar-label">Navigation</div>
+
         <button class="sidebar-nav-item active" data-panel="dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
           Dashboard
         </button>
+
         <button class="sidebar-nav-item" data-panel="videos">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9A2.25 2.25 0 004.5 18.75z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9A2.25 2.25 0 004.5 18.75z"/>
+          </svg>
           Vidéos
         </button>
+
         <button class="sidebar-nav-item" data-panel="users">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+          </svg>
           Utilisateurs
         </button>
+
         <button class="sidebar-nav-item" data-panel="assign">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
+          </svg>
           Assigner
         </button>
+
         <button class="sidebar-nav-item" data-panel="invite">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+          </svg>
           Inviter
         </button>
+
         <button class="sidebar-nav-item" data-panel="stats">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+          </svg>
           Statistiques
         </button>
       </aside>
 
-      <!-- MAIN -->
       <main class="admin-main">
 
-        <!-- DASHBOARD -->
         <section class="admin-panel active" id="panel-dashboard">
           <h1 class="admin-panel-title">Dashboard</h1>
           <p class="admin-panel-sub">Vue d'ensemble de la plateforme</p>
@@ -71,16 +91,18 @@
           </div>
         </section>
 
-        <!-- VIDEOS -->
         <section class="admin-panel" id="panel-videos">
           <h1 class="admin-panel-title">Gestion des vidéos</h1>
-          <p class="admin-panel-sub">Ajouter et gérer les vlogs</p>
+          <p class="admin-panel-sub">Ajouter et gérer les vlogs YouTube</p>
 
           <div class="admin-card">
             <div class="admin-card-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
               Ajouter une vidéo
             </div>
+
             <div style="display:flex;flex-direction:column;gap:20px;">
 
               <div class="form-group">
@@ -90,45 +112,15 @@
 
               <div class="form-group">
                 <label class="form-label">Description (optionnel)</label>
-                <textarea class="form-input" id="newVideoDesc" placeholder="Décris ce vlog en quelques mots..." rows="3"></textarea>
+                <textarea class="form-input" id="newVideoDesc" placeholder="Décris ce vlog..." rows="3"></textarea>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Plateforme</label>
-                <div class="platform-toggle">
-                  <button class="platform-btn active" id="btnYoutube" data-platform="youtube">
-                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                    YouTube
-                  </button>
-                  <button class="platform-btn" id="btnVimeo" data-platform="vimeo">
-                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M23.977 6.416c-.105 2.338-1.739 5.543-4.894 9.609-3.268 4.247-6.026 6.37-8.29 6.37-1.409 0-2.578-1.294-3.553-3.881L5.322 11.4C4.603 8.816 3.834 7.522 3.01 7.522c-.179 0-.806.378-1.881 1.132L0 7.197a315.065 315.065 0 003.501-3.128C5.08 2.701 6.266 1.984 7.055 1.91c1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.507.539 2.45 1.131 3.674 1.776 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.868 3.434-5.757 6.762-5.637 2.473.06 3.628 1.664 3.48 4.807z"/></svg>
-                    Vimeo
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" id="videoIdLabel">ID ou URL YouTube</label>
+                <label class="form-label">ID ou URL YouTube</label>
                 <input type="text" class="form-input" id="newVideoId" placeholder="dQw4w9WgXcQ ou https://youtube.com/watch?v=..." />
-                <span class="form-hint" id="videoIdHint">Colle l'ID ou l'URL complète YouTube</span>
+                <span class="form-hint">Colle l'ID ou l'URL complète YouTube</span>
               </div>
 
-              <!-- Vimeo : infos sur l'URL privée -->
-              <div id="vimeoPrivateInfo" style="display:none;padding:12px 16px;background:rgba(26,183,234,0.06);border:1px solid rgba(26,183,234,0.2);border-radius:var(--radius-sm);font-size:0.82rem;color:var(--text-muted);line-height:1.6;">
-                💡 <strong style="color:#1ab7ea;">Vidéo Vimeo privée</strong><br>
-                Pour une vidéo privée avec lien secret, colle l'URL complète :<br>
-                <code style="background:var(--bg-3);padding:2px 6px;border-radius:3px;font-size:0.78rem;">https://vimeo.com/123456789/abc123def456</code><br>
-                Le hash privé (<code style="background:var(--bg-3);padding:2px 6px;border-radius:3px;font-size:0.78rem;">abc123def456</code>) sera extrait automatiquement.
-              </div>
-
-              <div id="vimeoThumbPreview" style="display:none;">
-                <div class="thumb-preview-wrap">
-                  <img id="vimeoThumbImg" src="" alt="Miniature Vimeo" />
-                  <span id="vimeoThumbStatus"></span>
-                </div>
-              </div>
-
-              <!-- Miniature custom -->
               <div class="form-group">
                 <label class="form-label">Miniature personnalisée (optionnel)</label>
                 <div class="custom-thumb-upload" id="thumbUploadZone">
@@ -149,7 +141,6 @@
 
           <div class="admin-card">
             <div class="admin-card-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-1.5A1.125 1.125 0 0118 18.375M20.625 4.5H3.375m17.25 0c.621 0 1.125.504 1.125 1.125M20.625 4.5h-1.5C18.504 4.5 18 5.004 18 5.625m3.75 0v1.5c0 .621-.504 1.125-1.125 1.125M3.375 4.5c-.621 0-1.125.504-1.125 1.125M3.375 4.5h1.5C5.496 4.5 6 5.004 6 5.625m-3.75 0v1.5c0 .621.504 1.125 1.125 1.125m0 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m1.5-3.75C5.496 8.25 6 8.754 6 9.375v1.5m0-5.25v5.25m0-5.25C6 5.004 6.504 4.5 7.125 4.5h9.75c.621 0 1.125.504 1.125 1.125m1.125 2.625h1.5m-1.5 0A1.125 1.125 0 0118 7.875v1.5m1.5-3.75C19.496 5.004 19 5.625 19 5.625"/></svg>
               Liste des vidéos (<span id="videoListCount">0</span>)
             </div>
             <div class="admin-video-list" id="adminVideoList">
@@ -158,7 +149,6 @@
           </div>
         </section>
 
-        <!-- USERS -->
         <section class="admin-panel" id="panel-users">
           <h1 class="admin-panel-title">Utilisateurs</h1>
           <p class="admin-panel-sub">Tous les comptes enregistrés</p>
@@ -176,16 +166,17 @@
           </div>
         </section>
 
-        <!-- ASSIGN -->
         <section class="admin-panel" id="panel-assign">
           <h1 class="admin-panel-title">Assigner des accès</h1>
           <p class="admin-panel-sub">Sélectionnez une vidéo et les utilisateurs autorisés</p>
+
           <div class="admin-card">
             <div class="admin-card-title">Sélectionner une vidéo</div>
             <select class="form-input" id="assignVideoSelect" style="margin-bottom:0;">
               <option value="">— Choisir une vidéo —</option>
             </select>
           </div>
+
           <div class="admin-card" id="assignUsersCard" style="display:none;">
             <div class="admin-card-title">Utilisateurs autorisés</div>
             <div class="checkbox-list" id="assignCheckboxList"></div>
@@ -195,15 +186,12 @@
           </div>
         </section>
 
-        <!-- INVITE -->
         <section class="admin-panel" id="panel-invite">
           <h1 class="admin-panel-title">Inviter un utilisateur</h1>
-          <p class="admin-panel-sub">Envoyez un lien d'invitation par email</p>
+          <p class="admin-panel-sub">Génère un lien d'invitation privé</p>
+
           <div class="admin-card">
-            <div class="admin-card-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-              Nouvelle invitation
-            </div>
+            <div class="admin-card-title">Nouvelle invitation</div>
             <div style="display:flex;flex-direction:column;gap:20px;">
               <div class="form-group">
                 <label class="form-label">Email de l'invité</label>
@@ -215,16 +203,16 @@
               <div id="inviteResult" style="display:none;"></div>
             </div>
           </div>
+
           <div class="admin-card">
             <div class="admin-card-title">Invitations envoyées</div>
             <div id="inviteList"><div style="color:var(--text-dim);font-size:0.85rem;">Chargement...</div></div>
           </div>
         </section>
 
-        <!-- STATS -->
         <section class="admin-panel" id="panel-stats">
           <h1 class="admin-panel-title">Statistiques avancées</h1>
-          <p class="admin-panel-sub">Qui a regardé quoi et depuis quel appareil</p>
+          <p class="admin-panel-sub">Vues et visionnage</p>
           <div class="admin-card" id="statsContent">
             <div style="color:var(--text-dim);font-size:0.85rem;">Chargement...</div>
           </div>

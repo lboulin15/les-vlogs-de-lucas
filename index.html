@@ -3,76 +3,109 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Les Vlogs de Lucas — Connexion</title>
+  <title>Connexion — Les Vlogs de Lucas</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="login-page">
 
-  <div class="login-page">
-    <div class="login-card">
-      <div class="login-logo">LES VLOGS<br><span>DE LUCAS</span></div>
-      <p class="login-subtitle">Plateforme privée — Connexion requise</p>
+  <!-- Fond décoratif -->
+  <div class="login-bg"></div>
+  <div class="login-bg-glow login-bg-glow-1"></div>
+  <div class="login-bg-glow login-bg-glow-2"></div>
 
-      <form class="login-form" id="loginForm" autocomplete="off">
+  <!-- Contenu principal -->
+  <main class="login-wrap">
+
+    <section class="login-hero">
+      <div class="login-brand-badge">ESPACE PRIVÉ</div>
+      <h1 class="login-title">LES VLOGS DE LUCAS</h1>
+      <p class="login-subtitle">
+        Accède à ton espace privé de visionnage et retrouve tous les vlogs dans une expérience premium.
+      </p>
+    </section>
+
+    <section class="login-card">
+      <div class="login-card-header">
+        <h2 class="login-card-title">Connexion</h2>
+        <p class="login-card-text">Entre tes identifiants pour continuer</p>
+      </div>
+
+      <form id="loginForm" class="login-form" novalidate>
         <div class="form-group">
-          <label class="form-label" for="email">Adresse email</label>
-          <input class="form-input" type="email" id="email"
-            placeholder="votre@email.com" required autocomplete="email" />
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="form-input"
+            placeholder="ton@email.com"
+            autocomplete="email"
+            required
+          />
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="password">Mot de passe</label>
-          <div class="input-password-wrap">
-            <input class="form-input" type="password" id="password"
-              placeholder="••••••••" required autocomplete="current-password" />
-            <button type="button" class="password-toggle" id="passwordToggle"
-              aria-label="Afficher le mot de passe">
-              <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
-              </svg>
-              <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
+          <label for="password" class="form-label">Mot de passe</label>
+
+          <div class="password-wrap">
+            <input
+              type="password"
+              id="password"
+              class="form-input"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            />
+
+            <button
+              type="button"
+              id="passwordToggle"
+              class="password-toggle"
+              aria-label="Afficher ou masquer le mot de passe"
+            >
+              <span class="eye-off">👁</span>
+              <span class="eye-on" style="display:none;">🙈</span>
             </button>
           </div>
         </div>
 
-        <div class="login-error" id="loginError"></div>
+        <p id="loginError" class="login-error" aria-live="polite"></p>
 
-        <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginBtn">
+        <button type="submit" id="loginBtn" class="btn btn-primary btn-lg login-submit">
           Se connecter
         </button>
       </form>
-    </div>
-  </div>
 
-  <!-- POPUP BIENVENUE -->
-  <div class="welcome-overlay" id="welcomeOverlay">
-    <div class="welcome-modal">
-      <div class="welcome-icon">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9A2.25 2.25 0 004.5 18.75z"
-            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <div class="login-footer">
+        <p class="login-footer-text">
+          Accès réservé aux utilisateurs autorisés.
+        </p>
       </div>
-      <div class="welcome-tag">Accès accordé ✓</div>
-      <h2 class="welcome-title">Bienvenue sur<br><span>Les Vlogs de Lucas</span></h2>
-      <p class="welcome-message">
-        Bonjour <strong id="welcomeName"></strong> ! 👋<br><br>
-        Retrouvez ici tous vos vlogs en accès privé.
+    </section>
+
+  </main>
+
+  <!-- Popup de bienvenue -->
+  <div class="welcome-overlay" id="welcomeOverlay" aria-hidden="true">
+    <div class="welcome-card">
+      <div class="welcome-glow"></div>
+
+      <div class="welcome-badge">ACCÈS AUTORISÉ</div>
+
+      <h2 class="welcome-title">Connexion accordée</h2>
+
+      <p class="welcome-text">
+        Bienvenue <span class="welcome-name" id="welcomeName">Lucas</span>
       </p>
-      <div class="welcome-divider"></div>
-      <div class="welcome-features">
-        <div class="welcome-feature"><span class="welcome-feature-icon">🎬</span><span>Vlogs exclusifs</span></div>
-        <div class="welcome-feature"><span class="welcome-feature-icon">💬</span><span>Commentaires</span></div>
-        <div class="welcome-feature"><span class="welcome-feature-icon">⭐</span><span>Notes</span></div>
+
+      <p class="welcome-subtext">
+        Ton espace privé est prêt. Entre dans l’univers des vlogs.
+      </p>
+
+      <div class="welcome-actions">
+        <button type="button" id="welcomeEnterBtn" class="btn welcome-enter-btn">
+          Entrer
+        </button>
       </div>
-      <button class="btn btn-primary btn-full btn-lg welcome-enter-btn" id="welcomeEnterBtn">
-        Accéder aux vlogs →
-      </button>
     </div>
   </div>
 

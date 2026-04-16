@@ -83,7 +83,10 @@ function getThumb(v, quality = 'mq') {
     // ---- Events ----
     logoutBtn.addEventListener('click', async () => { await supabase.auth.signOut(); navigateTo('index.html'); });
     navBrand.addEventListener('click', triggerConfetti);
-    adminLink.addEventListener('click', e => { e.preventDefault(); navigateTo('admin.html'); });
+    adminLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  window.location.href = 'admin.html';
+});
 
     // ---- Vidéos ----
     let videos = [];
