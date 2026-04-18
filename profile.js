@@ -28,6 +28,29 @@ function escapeHtml(str) {
   d.appendChild(document.createTextNode(str || ''));
   return d.innerHTML;
 }
+
+function getYoutubeThumb(youtubeId, quality = 'mqdefault') {
+  return `https://img.youtube.com/vi/${youtubeId}/${quality}.jpg`;
+}
+
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatDateTime(dateString) {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function showToast(msg, type = 'success') {
   const toast = document.getElementById('toast');
   toast.textContent = msg; toast.className = `toast ${type} show`;
@@ -72,7 +95,9 @@ function showToast(msg, type = 'success') {
     const initials = email.split('@')[0].substring(0, 2).toUpperCase();
     document.getElementById('profileAvatar').style.cssText = `background:${bg};color:${fg};`;
     document.getElementById('profileAvatar').textContent = initials;
-    document.getElementById('profileName').textContent = email.split('@')[0];
+    const username = email.split('@')[0];
+document.getElementById('profileName').textContent =
+  username.charAt(0).toUpperCase() + username.slice(1);
     document.getElementById('profileEmail').textContent = email;
     document.getElementById('profileJoined').textContent = `Membre depuis ${new Date(profile?.created_at || user.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`;
 
@@ -114,83 +139,166 @@ function showToast(msg, type = 'success') {
       : '—';
 
     document.getElementById('profileStatsRow').innerHTML = `
-      <div class="profile-stat"><div class="profile-stat-val">${videos.length}</div><div class="profile-stat-lbl">Vidéos</div></div>
-      <div class="profile-stat"><div class="profile-stat-val">${watched}</div><div class="profile-stat-lbl">Vues complètes</div></div>
-      <div class="profile-stat"><div class="profile-stat-val">${comments}</div><div class="profile-stat-lbl">Commentaires</div></div>
-      <div class="profile-stat"><div class="profile-stat-val" style="color:var(--gold)">${avgRating}</div><div class="profile-stat-lbl">Note moyenne</div></div>`;
+  <div class="profile-stat">
+    <div class="profile-stat-val">${started}</div>
+    <div class="profile-stat-lbl">Vidéos commencées</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-val">${watched}</div>
+    <div class="profile-stat-lbl">Vues complètes</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-val">${comments}</div>
+    <div class="profile-stat-lbl">Commentaires</div>
+  </div>
+  <div class="profile-stat">
+    <div class="profile-stat-val" style="color:var(--gold)">${avgRating}</div>
+    <div class="profile-stat-lbl">Note moyenne</div>
+  </div>
+`;
 
     // ---- Onglets ----
     // Tab: vidéos vues
-    const tabVideos = document.getElementById('tab-videos');
-    if (!watchHistory || watchHistory.length === 0) {
-      tabVideos.innerHTML = `<p style="color:var(--text-dim);padding:20px 0;">Aucune vidéo regardée pour l'instant.</p>`;
-    } else {
-      const grid = document.createElement('div');
-      grid.className = 'video-row';
-      watchHistory.forEach(w => {
-        const v = videoMap[w.video_id];
-        if (!v) return;
-        const thumb = v.thumbnail_url || ((v.platform || 'youtube') === 'youtube'
-          ? `https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg` : '');
-        const card = document.createElement('div');
-        card.className = 'video-card fade-in';
-        card.innerHTML = `
-          <div class="video-thumb">
-            <img src="${thumb}" alt="${escapeHtml(v.title)}" loading="lazy" />
-            <div class="video-thumb-overlay"><div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-            ${w.progress > 0 ? `<div class="video-progress-bar" style="width:${w.progress}%"></div>` : ''}
+   const tabVideos = document.getElementById('tab-videos');
+if (!watchHistory || watchHistory.length === 0) {
+  tabVideos.innerHTML = `
+    <div class="profile-section-header">
+      <h2 class="profile-section-title">Mes vidéos vues</h2>
+    </div>
+    <div class="profile-empty-state">Aucune vidéo regardée pour l’instant.</div>
+  `;
+} else {
+  tabVideos.innerHTML = `
+    <div class="profile-section-header">
+      <h2 class="profile-section-title">Mes vidéos vues</h2>
+    </div>
+  `;
+
+  const grid = document.createElement('div');
+  grid.className = 'profile-cards-grid';
+
+  watchHistory.forEach(w => {
+    const v = videoMap[w.video_id];
+    if (!v) return;
+
+    const thumb = v.thumbnail_url || getYoutubeThumb(v.youtube_id);
+    const card = document.createElement('article');
+    card.className = 'profile-video-card fade-in';
+
+    card.innerHTML = `
+      <div class="profile-video-thumb">
+        <img src="${thumb}" alt="${escapeHtml(v.title)}" loading="lazy" />
+        <div class="profile-video-overlay">
+          <div class="play-icon">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </div>
-          <div class="video-info">
-            <div class="video-title-card">${escapeHtml(v.title)}</div>
-            <div class="video-meta-row">
-              <span style="color:${w.progress >= 95 ? 'var(--green)' : 'var(--accent)'};">${w.progress >= 95 ? '✓ Vu' : `${w.progress}% vu`}</span>
-              <span style="font-size:0.72rem;color:var(--text-dim);">${new Date(w.watched_at).toLocaleDateString('fr-FR')}</span>
-            </div>
-          </div>`;
-        card.addEventListener('click', () => navigateTo(`video.html?id=${v.id}`));
-        grid.appendChild(card);
-      });
-      tabVideos.appendChild(grid);
-    }
+        </div>
+        ${w.progress > 0 ? `<div class="profile-video-progress" style="width:${w.progress}%"></div>` : ''}
+      </div>
+
+      <div class="profile-video-body">
+        <div class="profile-video-title">${escapeHtml(v.title)}</div>
+        <div class="profile-video-meta">
+          <span class="${w.progress >= 95 ? 'profile-status-done' : 'profile-status-progress'}">
+            ${w.progress >= 95 ? '✓ Vu en entier' : `${w.progress}% regardé`}
+          </span>
+          <span>${formatDate(w.watched_at)}</span>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => navigateTo(`video.html?id=${v.id}`));
+    grid.appendChild(card);
+  });
+
+  tabVideos.appendChild(grid);
+}
 
     // Tab: commentaires
     const tabComments = document.getElementById('tab-comments');
-    if (!myComments || myComments.length === 0) {
-      tabComments.innerHTML = `<p style="color:var(--text-dim);padding:20px 0;">Aucun commentaire posté pour l'instant.</p>`;
-    } else {
-      myComments.forEach(c => {
-        const v = videoMap[c.video_id];
-        const div = document.createElement('div');
-        div.className = 'profile-comment-item fade-in';
-        div.innerHTML = `
-          <div class="profile-comment-video">🎬 ${v ? escapeHtml(v.title) : 'Vidéo inconnue'}</div>
-          <div class="profile-comment-text">${escapeHtml(c.content)}</div>
-          <div class="profile-comment-date">${new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>`;
-        if (v) div.style.cursor = 'pointer';
-        div.addEventListener('click', () => v && navigateTo(`video.html?id=${v.id}`));
-        tabComments.appendChild(div);
-      });
+if (!myComments || myComments.length === 0) {
+  tabComments.innerHTML = `
+    <div class="profile-section-header">
+      <h2 class="profile-section-title">Mes commentaires</h2>
+    </div>
+    <div class="profile-empty-state">Aucun commentaire posté pour l’instant.</div>
+  `;
+} else {
+  tabComments.innerHTML = `
+    <div class="profile-section-header">
+      <h2 class="profile-section-title">Mes commentaires</h2>
+    </div>
+  `;
+
+  const list = document.createElement('div');
+  list.className = 'profile-list';
+
+  myComments.forEach(c => {
+    const v = videoMap[c.video_id];
+    const item = document.createElement('article');
+    item.className = `profile-card-item fade-in${v ? ' is-link' : ''}`;
+
+    item.innerHTML = `
+      <div class="profile-item-top">
+        <div class="profile-item-video">🎬 ${v ? escapeHtml(v.title) : 'Vidéo inconnue'}</div>
+        <div class="profile-item-date">${formatDateTime(c.created_at)}</div>
+      </div>
+      <div class="profile-item-content">${escapeHtml(c.content)}</div>
+    `;
+
+    if (v) {
+      item.addEventListener('click', () => navigateTo(`video.html?id=${v.id}`));
     }
+
+    list.appendChild(item);
+  });
+
+  tabComments.appendChild(list);
+}
 
     // Tab: notes
     const tabRatings = document.getElementById('tab-ratings');
-    if (!myRatings || myRatings.length === 0) {
-      tabRatings.innerHTML = `<p style="color:var(--text-dim);padding:20px 0;">Aucune note donnée pour l'instant.</p>`;
-    } else {
-      myRatings.forEach(r => {
-        const v = videoMap[r.video_id];
-        const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-        const div = document.createElement('div');
-        div.className = 'profile-comment-item fade-in';
-        div.innerHTML = `
-          <div class="profile-comment-video">🎬 ${v ? escapeHtml(v.title) : 'Vidéo inconnue'}</div>
-          <div style="font-size:1.3rem;color:var(--gold);margin:6px 0;">${stars}</div>
-          <div class="profile-comment-date">${new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>`;
-        if (v) div.style.cursor = 'pointer';
-        div.addEventListener('click', () => v && navigateTo(`video.html?id=${v.id}`));
-        tabRatings.appendChild(div);
-      });
+if (!myRatings || myRatings.length === 0) {
+  tabRatings.innerHTML = `
+    <div class="profile-section-header">
+      <h2 class="profile-section-title">Mes notes</h2>
+    </div>
+    <div class="profile-empty-state">Aucune note donnée pour l’instant.</div>
+  `;
+} else {
+  tabRatings.innerHTML = `
+    <div class="profile-section-header">
+      <h2 class="profile-section-title">Mes notes</h2>
+    </div>
+  `;
+
+  const list = document.createElement('div');
+  list.className = 'profile-list';
+
+  myRatings.forEach(r => {
+    const v = videoMap[r.video_id];
+    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+
+    const item = document.createElement('article');
+    item.className = `profile-card-item fade-in${v ? ' is-link' : ''}`;
+
+    item.innerHTML = `
+      <div class="profile-item-top">
+        <div class="profile-item-video">🎬 ${v ? escapeHtml(v.title) : 'Vidéo inconnue'}</div>
+        <div class="profile-item-date">${formatDate(r.created_at)}</div>
+      </div>
+      <div class="profile-rating-stars">${stars}</div>
+    `;
+
+    if (v) {
+      item.addEventListener('click', () => navigateTo(`video.html?id=${v.id}`));
     }
+
+    list.appendChild(item);
+  });
+
+  tabRatings.appendChild(list);
+}
 
     // ---- Tabs navigation ----
     const tabs = document.querySelectorAll('.profile-tab');

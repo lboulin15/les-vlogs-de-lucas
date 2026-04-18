@@ -43,6 +43,11 @@ let currentVideo = null;
 let userRating = 0;
 let sliderIndex = 0;
 
+let youtubePlayer = null;
+let saveProgressInterval = null;
+let resumeProgress = 0;
+let videoDuration = 0;
+
 // ratingAverage n'est pas toujours présent dans le HTML
 let ratingAverage = document.getElementById('ratingAverage');
 if (!ratingAverage && starRating?.parentElement) {
@@ -255,6 +260,29 @@ async function userHasAccessToVideo() {
 // ============================================================
 // VIDEO
 // ============================================================
+async function loadSavedProgress() {
+  if (!currentUser || !videoId) return 0;
+
+  try {
+    const { data, error } = await supabase
+      .from('watch_history')
+      .select('progress')
+      .eq('user_id', currentUser.id)
+      .eq('video_id', videoId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Erreur récupération progression :', error);
+      return 0;
+    }
+
+    return data?.progress || 0;
+  } catch (err) {
+    console.error('Erreur loadSavedProgress :', err);
+    return 0;
+  }
+}
+
 async function loadVideo() {
   const { data: video, error } = await supabase
     .from('videos')
@@ -273,19 +301,158 @@ async function loadVideo() {
   videoTitleEl.textContent = video.title || 'Sans titre';
   videoDateEl.textContent = formatLongDate(video.created_at);
   videoDescriptionEl.textContent =
-    video.description?.trim() || 'Aucune description pour cette vidéo.';
+    video.description?.trim() || 'Aucune description pour cette vidéo pour le moment.';
 
-  playerWrap.innerHTML = `
-    <iframe
-      src="https://www.youtube.com/embed/${video.youtube_id}?rel=0&modestbranding=1&playsinline=1"
-      title="${escapeHtml(video.title)}"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-      referrerpolicy="strict-origin-when-cross-origin"
-    ></iframe>
-  `;
+  resumeProgress = await loadSavedProgress();
+
+  playerWrap.innerHTML = `<div id="youtubePlayer"></div>`;
+
+  loadYouTubePlayer(video.youtube_id);
 
   return true;
+}
+
+function loadYouTubeIframeAPI() {
+  return new Promise((resolve, reject) => {
+    if (window.YT && window.YT.Player) {
+      resolve();
+      return;
+    }
+
+    let timeoutId = null;
+    let intervalId = null;
+
+    function cleanup() {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    }
+
+    const existingScript = document.querySelector('script[data-youtube-api="true"]');
+
+    if (!existingScript) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      tag.async = true;
+      tag.setAttribute('data-youtube-api', 'true');
+      document.head.appendChild(tag);
+    }
+
+    window.onYouTubeIframeAPIReady = () => {
+      cleanup();
+      resolve();
+    };
+
+    intervalId = setInterval(() => {
+      if (window.YT && window.YT.Player) {
+        cleanup();
+        resolve();
+      }
+    }, 100);
+
+    timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error('L’API YouTube n’a pas chargé à temps.'));
+    }, 10000);
+  });
+}
+
+async function loadYouTubePlayer(youtubeId) {
+  try {
+    await loadYouTubeIframeAPI();
+
+    youtubePlayer = new window.YT.Player('youtubePlayer', {
+      videoId: youtubeId,
+      playerVars: {
+        rel: 0,
+        modestbranding: 1,
+        playsinline: 1,
+        start: 0,
+      },
+      events: {
+        onReady: onPlayerReady,
+        onStateChange: onPlayerStateChange,
+      },
+    });
+  } catch (err) {
+    console.error('Erreur chargement player YouTube :', err);
+
+    playerWrap.innerHTML = `
+      <iframe
+        src="https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1&playsinline=1"
+        title="Lecteur vidéo"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    `;
+  }
+}
+
+function onPlayerReady(event) {
+  try {
+    videoDuration = event.target.getDuration() || 0;
+
+    if (resumeProgress > 0 && resumeProgress < 95 && videoDuration > 0) {
+      const resumeSeconds = Math.floor((resumeProgress / 100) * videoDuration);
+
+      if (resumeSeconds > 5 && resumeSeconds < videoDuration - 5) {
+        event.target.seekTo(resumeSeconds, true);
+      }
+    }
+  } catch (err) {
+    console.error('Erreur onPlayerReady :', err);
+  }
+}
+
+function onPlayerStateChange(event) {
+  const YTState = window.YT?.PlayerState;
+  if (!YTState) return;
+
+  if (event.data === YTState.PLAYING) {
+    startProgressTracking();
+  }
+
+  if (event.data === YTState.PAUSED) {
+    saveCurrentProgress();
+    stopProgressTracking();
+  }
+
+  if (event.data === YTState.ENDED) {
+    updateWatchProgress(100);
+    stopProgressTracking();
+  }
+}
+
+function startProgressTracking() {
+  stopProgressTracking();
+
+  saveProgressInterval = window.setInterval(() => {
+    saveCurrentProgress();
+  }, 5000);
+}
+
+function stopProgressTracking() {
+  if (saveProgressInterval) {
+    window.clearInterval(saveProgressInterval);
+    saveProgressInterval = null;
+  }
+}
+
+function saveCurrentProgress() {
+  if (!youtubePlayer || typeof youtubePlayer.getCurrentTime !== 'function') return;
+  if (!youtubePlayer.getDuration || typeof youtubePlayer.getDuration !== 'function') return;
+
+  try {
+    const currentTime = youtubePlayer.getCurrentTime();
+    const duration = youtubePlayer.getDuration();
+
+    if (!duration || duration <= 0) return;
+
+    const progress = Math.min(100, Math.round((currentTime / duration) * 100));
+    updateWatchProgress(progress);
+  } catch (err) {
+    console.error('Erreur saveCurrentProgress :', err);
+  }
 }
 
 async function logView() {
@@ -310,11 +477,28 @@ async function updateWatchProgress(progress) {
   if (!currentUser || !videoId) return;
 
   try {
+    const safeProgress = Math.max(0, Math.min(100, Math.round(progress)));
+
+    const { data: existing, error: readError } = await supabase
+      .from('watch_history')
+      .select('progress')
+      .eq('user_id', currentUser.id)
+      .eq('video_id', videoId)
+      .maybeSingle();
+
+    if (readError) {
+      console.error('Erreur lecture watch history :', readError);
+      return;
+    }
+
+    const previousProgress = existing?.progress || 0;
+    const nextProgress = Math.max(previousProgress, safeProgress);
+
     const { error } = await supabase.from('watch_history').upsert(
       {
         user_id: currentUser.id,
         video_id: videoId,
-        progress,
+        progress: nextProgress,
         device: getDeviceType(),
         watched_at: new Date().toISOString(),
       },
@@ -614,10 +798,12 @@ function bindCommentEvents() {
 // ============================================================
 function bindNavEvents() {
   backBtn?.addEventListener('click', () => {
+    saveCurrentProgress();
     window.location.href = 'home.html';
   });
 
   logoutBtn?.addEventListener('click', async () => {
+    saveCurrentProgress();
     await supabase.auth.signOut();
     window.location.href = 'index.html';
   });
@@ -638,44 +824,47 @@ function bindAuthSync() {
 // INIT
 // ============================================================
 async function init() {
-  if (!videoId) {
-    window.location.href = 'home.html';
-    return;
+  try {
+    if (!videoId) {
+      window.location.href = 'home.html';
+      return;
+    }
+
+    const sessionOk = await loadSessionAndProfile();
+    if (!sessionOk) return;
+
+    const hasAccess = await userHasAccessToVideo();
+    if (!hasAccess) {
+      window.location.href = 'home.html';
+      return;
+    }
+
+    const videoOk = await loadVideo();
+    if (!videoOk) return;
+
+    bindNavEvents();
+    bindAuthSync();
+    bindRatingEvents();
+    bindSliderEvents();
+    bindCommentEvents();
+
+    await Promise.all([
+      logView(),
+      loadRatings(),
+      loadSuggestions(),
+      loadComments(),
+    ]);
+
+    window.addEventListener('beforeunload', () => {
+      saveCurrentProgress();
+    });
+
+    showPage();
+  } catch (err) {
+    console.error('Erreur init vidéo :', err);
+    showPage();
+    showToast('Une erreur est survenue lors du chargement.', 'error');
   }
-
-  const sessionOk = await loadSessionAndProfile();
-  if (!sessionOk) return;
-
-  const hasAccess = await userHasAccessToVideo();
-  if (!hasAccess) {
-    window.location.href = 'home.html';
-    return;
-  }
-
-  const videoOk = await loadVideo();
-  if (!videoOk) return;
-
-  bindNavEvents();
-  bindAuthSync();
-  bindRatingEvents();
-  bindSliderEvents();
-  bindCommentEvents();
-
-  await Promise.all([
-    logView(),
-    loadRatings(),
-    loadSuggestions(),
-    loadComments(),
-  ]);
-
-  // Historique simplifié
-  window.setTimeout(() => updateWatchProgress(30), 5000);
-  window.setTimeout(() => updateWatchProgress(70), 30000);
-  window.addEventListener('beforeunload', () => {
-    updateWatchProgress(95);
-  });
-
-  showPage();
 }
 
 init();

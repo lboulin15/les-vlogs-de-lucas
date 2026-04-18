@@ -6,9 +6,10 @@
   <title>Mon profil — Les Vlogs de Lucas</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="profile-page-body">
 
   <div class="page-transition" id="pageTransition"></div>
+
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-logo">LUCAS</div>
     <div class="spinner"></div>
@@ -16,42 +17,57 @@
 
   <nav class="navbar" id="navbar" style="display:none">
     <div class="navbar-brand">LES VLOGS <span>DE LUCAS</span></div>
+
     <div class="navbar-right">
       <span class="navbar-user" id="navUserEmail"></span>
       <a href="admin.html" class="btn btn-secondary btn-sm" id="adminLink" style="display:none">👑 Admin</a>
       <button class="theme-toggle" id="themeToggle">🌙</button>
       <a href="home.html" class="btn btn-ghost btn-sm">🏠 Accueil</a>
-      <button class="btn btn-ghost btn-sm" id="logoutBtn">Déco</button>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Déconnexion</button>
     </div>
   </nav>
 
-  <div class="profile-page" id="profilePage" style="display:none">
+  <main class="profile-page" id="profilePage" style="display:none">
     <div class="profile-container">
+      <header class="profile-header-block">
+        <div class="profile-page-kicker">ESPACE PERSONNEL</div>
+        <h1 class="profile-page-title">Mon profil</h1>
+      </header>
 
-      <div class="profile-hero" id="profileHero">
-        <div class="profile-avatar-big" id="profileAvatar"></div>
-        <div class="profile-info">
-          <div class="profile-name" id="profileName"></div>
-          <div class="profile-email" id="profileEmail"></div>
-          <div class="profile-joined" id="profileJoined"></div>
-          <div class="profile-stats-row" id="profileStatsRow"></div>
+      <section class="profile-hero" id="profileHero">
+        <div class="profile-hero-overlay"></div>
+
+        <div class="profile-hero-content">
+          <div class="profile-avatar-big" id="profileAvatar"></div>
+
+          <div class="profile-info">
+            <div class="profile-name" id="profileName"></div>
+            <div class="profile-email" id="profileEmail"></div>
+            <div class="profile-joined" id="profileJoined"></div>
+          </div>
         </div>
-      </div>
 
-      <div class="profile-tabs">
-        <button class="profile-tab active" data-tab="videos">🎬 Vidéos vues</button>
-        <button class="profile-tab" data-tab="comments">💬 Mes commentaires</button>
-        <button class="profile-tab" data-tab="ratings">⭐ Mes notes</button>
-      </div>
+        <div class="profile-stats-row" id="profileStatsRow"></div>
+      </section>
 
-      <div class="profile-panel active" id="tab-videos"></div>
-      <div class="profile-panel" id="tab-comments"></div>
-      <div class="profile-panel" id="tab-ratings"></div>
+      <section class="profile-tabs-wrap">
+        <div class="profile-tabs">
+          <button class="profile-tab active" data-tab="videos">🎬 Mes vidéos vues</button>
+          <button class="profile-tab" data-tab="comments">💬 Mes commentaires</button>
+          <button class="profile-tab" data-tab="ratings">⭐ Mes notes</button>
+        </div>
+      </section>
 
+      <section class="profile-panels-wrap">
+        <div class="profile-panel active" id="tab-videos"></div>
+        <div class="profile-panel" id="tab-comments"></div>
+        <div class="profile-panel" id="tab-ratings"></div>
+      </section>
     </div>
-  </div>
+  </main>
 
   <div class="toast" id="toast"></div>
+
   <script type="module" src="profile.js"></script>
 </body>
 </html>
